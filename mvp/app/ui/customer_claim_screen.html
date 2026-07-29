@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claim Intake</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #d6dde8;
+      --text: #17202f;
+      --muted: #5f6d80;
+      --brand: #155e75;
+      --accent: #0f766e;
+      --danger: #b42318;
+      --soft: #edf7f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      font-size: 14px;
+    }
+    header {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: 18px; letter-spacing: 0; }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+      gap: 16px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    section, aside {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    h2 { margin: 0; font-size: 15px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 0;
+    }
+    input, select, textarea {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+    }
+    .full { grid-column: 1 / -1; }
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--line);
+    }
+    button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 14px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .summary {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #edf1f6;
+      padding-bottom: 8px;
+    }
+    .row span:first-child { color: var(--muted); }
+    .badge {
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .message { min-height: 20px; color: var(--muted); }
+    .message.error { color: var(--danger); }
+    .message.ok { color: var(--accent); }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #101828;
+      color: #eef4ff;
+      border-radius: 6px;
+      padding: 12px;
+      max-height: 420px;
+      overflow: auto;
+      font-size: 12px;
+    }
+    @media (max-width: 900px) {
+      header { padding: 10px 14px; }
+      main { grid-template-columns: 1fr; padding: 12px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Claim Intake</h1>
+    <span class="badge" id="statusBadge">Draft</span>
+  </header>
+  <main>
+    <section>
+      <div class="section-head">
+        <h2>Claim Information</h2>
+        <span class="message" id="formMessage"></span>
+      </div>
+      <div class="grid">
+        <label>Claim ID<input id="claim_id" value="MVP-CLAIM-0001"></label>
+        <label>Policy ID<input id="policy_id" value="POL-MVP-0001"></label>
+        <label>Product ID<input id="product_id" value="SYN-MED-001"></label>
+        <label>Scenario Type<input id="scenario_type" value="manual_claim"></label>
+        <label>Insured ID<input id="insured_id" value="INS-MVP-0001"></label>
+        <label>Age at Service<input id="age" type="number" value="42"></label>
+        <label>Sex<select id="gender"><option value="F">F</option><option value="M">M</option><option value="U">U</option></select></label>
+        <label>Policyholder Relation<select id="policyholder_relation"><option value="self">Self</option><option value="spouse">Spouse</option><option value="child">Child</option><option value="parent">Parent</option><option value="other">Other</option></select></label>
+        <label>Policy Status<select id="policy_status"><option value="active">Active</option><option value="lapsed">Lapsed</option><option value="terminated">Terminated</option><option value="pending">Pending</option></select></label>
+        <label>Coverage Start<input id="coverage_start_date" type="date" value="2026-01-01"></label>
+        <label>Coverage End<input id="coverage_end_date" type="date" value="2026-12-31"></label>
+        <label>Care Setting<select id="care_setting"><option value="outpatient">Outpatient</option><option value="inpatient">Inpatient</option><option value="pharmacy">Pharmacy</option></select></label>
+        <label>Benefit Category<select id="benefit_category"><option value="covered">Covered</option><option value="noncovered">Noncovered</option><option value="special_noncovered">Special Noncovered</option></select></label>
+        <label>Treatment Code<input id="treatment_code" value="TRT-COLD-001"></label>
+        <label>Diagnosis Code<input id="diagnosis_code" value="SYN-J10"></label>
+        <label>Incident Date<input id="incident_date" type="date" value="2026-04-11"></label>
+        <label>Treatment Start<input id="treatment_start_date" type="date" value="2026-04-12"></label>
+        <label>Treatment End<input id="treatment_end_date" type="date" value="2026-04-12"></label>
+        <label>Claim Date<input id="claim_date" type="date" value="2026-04-15"></label>
+        <label>Claimed Amount<input id="claimed_amount" type="number" value="180000"></label>
+        <label>Receipt ID<input id="receipt_id" value="RCT-MVP-0001"></label>
+        <label>Receipt Hash<input id="receipt_hash" value="RH-MVP-0001"></label>
+        <label>Provider ID<input id="provider_id" value="PROV-MVP-HOSP-001"></label>
+        <label>Provider Type<select id="provider_type"><option value="medical_institution">Medical Institution</option><option value="pharmacy">Pharmacy</option><option value="non_medical_provider">Non Medical Provider</option></select></label>
+        <label>Same Diagnosis Claims 90d<input id="same_diagnosis_claims_90d" type="number" value="0"></label>
+        <label>Manual Therapy Count 180d<input id="manual_therapy_count_180d" type="number" value="0"></label>
+        <label>Same Insured+Provider Claims 30d<input id="same_insured_provider_claims_30d" type="number" value="0"></label>
+        <label>Provider Claims 30d<input id="same_provider_claims_30d" type="number" value="0"></label>
+        <label>Duplicate Receipt<select id="suspected_duplicate_receipt"><option value="false">false</option><option value="true">true</option></select></label>
+        <label>Document Mismatch<select id="document_claim_mismatch"><option value="false">false</option><option value="true">true</option></select></label>
+        <label class="full">Submitted Documents<textarea id="documents">claim_form
+medical_receipt
+medical_statement
+diagnosis_note</textarea></label>
+      </div>
+      <div class="actions">
+        <button id="previewBtn">Preview JSON</button>
+        <button class="primary" id="submitBtn">Submit Claim</button>
+      </div>
+    </section>
+    <aside>
+      <div class="section-head"><h2>Submission Summary</h2></div>
+      <div class="summary">
+        <div class="row"><span>Claim ID</span><strong id="summaryClaim">MVP-CLAIM-0001</strong></div>
+        <div class="row"><span>Claimed Amount</span><strong id="summaryAmount">180000 KRW</strong></div>
+        <div class="row"><span>Documents</span><strong id="summaryDocs">4</strong></div>
+        <div class="message" id="submitMessage"></div>
+        <pre id="jsonPreview"></pre>
+      </div>
+    </aside>
+  </main>
+  <script>
+    const ids = [
+      "claim_id","policy_id","product_id","scenario_type","insured_id","age","gender",
+      "policyholder_relation","policy_status",
+      "coverage_start_date","coverage_end_date","care_setting","benefit_category","treatment_code",
+      "diagnosis_code","incident_date","treatment_start_date","treatment_end_date","claim_date",
+      "claimed_amount","receipt_id","receipt_hash","provider_id","provider_type","same_diagnosis_claims_90d",
+      "manual_therapy_count_180d","same_insured_provider_claims_30d","same_provider_claims_30d",
+      "suspected_duplicate_receipt","document_claim_mismatch","documents"
+    ];
+    const $ = (id) => document.getElementById(id);
+    const bool = (id) => $(id).value === "true";
+
+    function docs() {
+      return $("documents").value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+    }
+
+    function ageBand(age) {
+      if (age >= 80) return "80plus";
+      if (age < 10) return "0-9";
+      return `${Math.floor(age / 10)}0s`;
+    }
+
+    function payload() {
+      const receiptId = $("receipt_id").value.trim();
+      const receiptHash = $("receipt_hash").value.trim();
+      const age = Number($("age").value);
+      return {
+        claim_id: $("claim_id").value.trim(),
+        policy_id: $("policy_id").value.trim(),
+        product_id: $("product_id").value.trim(),
+        scenario_type: $("scenario_type").value.trim(),
+        insured_profile: {
+          insured_id: $("insured_id").value.trim(),
+          age_at_service: age,
+          age_band: ageBand(age),
+          sex: $("gender").value,
+          policyholder_relation: $("policyholder_relation").value
+        },
+        claimant: {
+          synthetic_person_id: $("insured_id").value.trim(),
+          age: age,
+          gender: $("gender").value
+        },
+        policy: {
+          status: $("policy_status").value,
+          coverage_start_date: $("coverage_start_date").value,
+          coverage_end_date: $("coverage_end_date").value
+        },
+        claim: {
+          care_setting: $("care_setting").value,
+          benefit_category: $("benefit_category").value,
+          treatment_code: $("treatment_code").value.trim(),
+          diagnosis_code: $("diagnosis_code").value.trim(),
+          incident_date: $("incident_date").value,
+          treatment_start_date: $("treatment_start_date").value,
+          treatment_end_date: $("treatment_end_date").value,
+          claim_date: $("claim_date").value,
+          claimed_amount: Number($("claimed_amount").value),
+          receipt_id: receiptId,
+          receipt_hash: receiptHash,
+          provider_id: $("provider_id").value.trim(),
+          provider_type: $("provider_type").value
+        },
+        documents: docs(),
+        claim_history: {
+          same_diagnosis_claims_90d: Number($("same_diagnosis_claims_90d").value),
+          manual_therapy_count_180d: Number($("manual_therapy_count_180d").value),
+          same_insured_provider_claims_30d: Number($("same_insured_provider_claims_30d").value),
+          same_provider_claims_30d: Number($("same_provider_claims_30d").value),
+          prior_receipt_hashes: bool("suspected_duplicate_receipt") ? [receiptHash] : [],
+          prior_receipt_ids: bool("suspected_duplicate_receipt") ? [receiptId] : []
+        },
+        signals: {
+          cosmetic_purpose: false,
+          pre_existing_condition: false,
+          intentional_injury: false,
+          non_medical_provider: $("provider_type").value === "non_medical_provider",
+          suspected_duplicate_receipt: bool("suspected_duplicate_receipt"),
+          document_claim_mismatch: bool("document_claim_mismatch")
+        }
+      };
+    }
+
+    function render() {
+      const data = payload();
+      $("summaryClaim").textContent = data.claim_id || "-";
+      $("summaryAmount").textContent = `${data.claim.claimed_amount || 0} KRW`;
+      $("summaryDocs").textContent = String(data.documents.length);
+      $("jsonPreview").textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function submitClaim() {
+      render();
+      $("submitMessage").textContent = "Submitting";
+      $("submitMessage").className = "message";
+      try {
+        const response = await fetch("/claims", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload())
+        });
+        const body = await response.json();
+        if (!response.ok) throw new Error(JSON.stringify(body.detail || body));
+        $("statusBadge").textContent = "Submitted";
+        $("submitMessage").textContent = `${body.claim_id} accepted`;
+        $("submitMessage").className = "message ok";
+      } catch (error) {
+        $("statusBadge").textContent = "Error";
+        $("submitMessage").textContent = error.message;
+        $("submitMessage").className = "message error";
+      }
+    }
+
+    ids.forEach((id) => $(id).addEventListener("input", render));
+    $("previewBtn").addEventListener("click", render);
+    $("submitBtn").addEventListener("click", submitClaim);
+    render();
+  </script>
+</body>
+</html>

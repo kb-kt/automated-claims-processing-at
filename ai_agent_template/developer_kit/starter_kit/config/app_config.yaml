@@ -1,0 +1,8 @@
+app_name: claim-review-starter-kit
+api_framework: FastAPI
+sqlite_path: runtime/starter_kit.sqlite3
+template_root: ../../../
+retrieval:
+  enabled: true
+  mode: keyword
+  top_k: 3

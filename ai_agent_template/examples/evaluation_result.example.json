@@ -1,0 +1,36 @@
+{
+  "run_id": "EVAL-RUN-EXAMPLE-0001",
+  "dataset_name": "synthetic_eval",
+  "passed": true,
+  "metrics": {
+    "schema_validity": 1.0,
+    "decision_accuracy": 0.94,
+    "coverage_accuracy": 0.97,
+    "payable_amount_exact_match": 0.96,
+    "payable_amount_mae": 350,
+    "missing_document_exact_match": 0.97,
+    "reason_code_overlap": 0.86,
+    "human_review_recall": 0.99,
+    "fraud_suspected_recall": 1.0,
+    "false_denial_rate": 0.005,
+    "human_review_miss_rate": 0.005,
+    "false_payment_rate": 0.01,
+    "underpayment_rate": 0.02,
+    "overpayment_rate": 0.02,
+    "label_leakage_count": 0,
+    "forbidden_final_wording_count": 0,
+    "invalid_json_count": 0
+  },
+  "thresholds": {
+    "schema_validity": 1.0,
+    "decision_accuracy": 0.9,
+    "coverage_accuracy": 0.95,
+    "payable_amount_exact_match": 0.95,
+    "missing_document_exact_match": 0.95,
+    "human_review_recall": 0.98,
+    "fraud_suspected_recall": 0.98,
+    "false_denial_rate": 0.01,
+    "human_review_miss_rate": 0.01
+  },
+  "failure_cases_path": "ai_agent_template/eval/reports/EVAL-RUN-EXAMPLE-0001/failure_cases.jsonl"
+}

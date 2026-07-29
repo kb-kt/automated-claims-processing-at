@@ -1,0 +1,69 @@
+{
+  "claim": {
+    "claim_id": "CLM-EVAL-EXAMPLE-0001",
+    "policy_id": "POL-SYN-EXAMPLE-0001",
+    "product_id": "SYN-MED-001",
+    "scenario_type": "limit_exceeded_noncovered_outpatient",
+    "insured_profile": {
+      "insured_id": "INS-SYN-EXAMPLE-0001",
+      "age_at_service": 34,
+      "age_band": "30s",
+      "sex": "F",
+      "policyholder_relation": "self"
+    },
+    "claimant": {
+      "synthetic_person_id": "INS-SYN-EXAMPLE-0001",
+      "age": 34,
+      "gender": "F"
+    },
+    "policy": {
+      "status": "active",
+      "coverage_start_date": "2026-01-01",
+      "coverage_end_date": "2026-12-31"
+    },
+    "claim": {
+      "care_setting": "outpatient",
+      "benefit_category": "noncovered",
+      "treatment_code": "TRT-NONCOV-001",
+      "diagnosis_code": "SYN-M54",
+      "incident_date": "2026-05-03",
+      "treatment_start_date": "2026-05-03",
+      "treatment_end_date": "2026-05-03",
+      "claim_date": "2026-05-07",
+      "claimed_amount": 681994,
+      "receipt_id": "RCT-SYN-EXAMPLE-0001",
+      "receipt_hash": "RH-SYN-EXAMPLE-0001",
+      "provider_id": "PROV-SYN-HOSP-001",
+      "provider_type": "medical_institution"
+    },
+    "documents": [
+      "claim_form",
+      "medical_receipt",
+      "medical_statement",
+      "diagnosis_note"
+    ],
+    "claim_history": {
+      "same_diagnosis_claims_90d": 0,
+      "manual_therapy_count_180d": 0,
+      "same_insured_provider_claims_30d": 0,
+      "same_provider_claims_30d": 0,
+      "prior_receipt_hashes": [],
+      "prior_receipt_ids": []
+    },
+    "signals": {
+      "cosmetic_purpose": false,
+      "pre_existing_condition": false,
+      "intentional_injury": false,
+      "non_medical_provider": false,
+      "suspected_duplicate_receipt": false,
+      "document_claim_mismatch": false
+    }
+  },
+  "policy_document_ref": "data_generator/generated/policy_documents.md",
+  "options": {
+    "model_provider": "general_llm",
+    "model_name": "gemma-4-26B-4aB-it",
+    "strict_schema": true,
+    "force_human_review": false
+  }
+}

@@ -1,0 +1,34 @@
+version: 1.0.0
+codes:
+  - code: COV_OUTPATIENT_COVERED
+    label_ko: 급여 통원 의료비
+    care_setting: outpatient
+    benefit_category: covered
+  - code: COV_OUTPATIENT_NONCOVERED
+    label_ko: 비급여 통원 의료비
+    care_setting: outpatient
+    benefit_category: noncovered
+  - code: COV_PRESCRIPTION
+    label_ko: 처방조제비
+    care_setting: pharmacy
+    benefit_category: covered
+  - code: COV_INPATIENT_COVERED
+    label_ko: 급여 입원 의료비
+    care_setting: inpatient
+    benefit_category: covered
+  - code: COV_INPATIENT_NONCOVERED
+    label_ko: 비급여 입원 의료비
+    care_setting: inpatient
+    benefit_category: noncovered
+  - code: COV_SPECIAL_MANUAL_THERAPY
+    label_ko: 도수치료/체외충격파/증식치료
+    care_setting: outpatient
+    benefit_category: special_noncovered
+  - code: COV_SPECIAL_INJECTION
+    label_ko: 비급여 주사료
+    care_setting: outpatient
+    benefit_category: special_noncovered
+  - code: COV_SPECIAL_MRI_MRA
+    label_ko: 비급여 MRI/MRA
+    care_setting: outpatient
+    benefit_category: special_noncovered

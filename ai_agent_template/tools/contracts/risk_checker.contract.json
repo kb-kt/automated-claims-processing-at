@@ -1,0 +1,29 @@
+{
+  "tool_name": "risk_checker",
+  "version": "1.0.0",
+  "description": "Check mandatory human-review risk conditions.",
+  "input_schema": {
+    "type": "object",
+    "required": ["claim", "claim_history", "signals", "insured_profile"],
+    "properties": {
+      "claim": { "type": "object" },
+      "claim_history": { "type": "object" },
+      "signals": { "type": "object" },
+      "insured_profile": { "type": "object" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["requires_human_review", "risk_reason_codes"],
+    "properties": {
+      "requires_human_review": { "type": "boolean" },
+      "risk_reason_codes": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

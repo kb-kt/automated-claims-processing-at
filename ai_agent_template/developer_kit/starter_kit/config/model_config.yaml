@@ -1,0 +1,14 @@
+active_provider: mock
+providers:
+  mock:
+    provider_type: mock
+    model_id: mock-reviewer
+    deterministic: true
+  general_llm:
+    provider_type: hosted_llm
+    base_url: https://m2.geniemars.kt.co.kr:10601/v1
+    api_key: dummy
+    model_id: gemma-4-26B-4aB-it
+    temperature: 0
+    response_format: json_schema
+

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>Claim Intake</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f6f7f9; color: #1f2933; }
+    header { background: #ffffff; border-bottom: 1px solid #d8dde6; padding: 18px 28px; }
+    main { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 24px; }
+    section { background: #ffffff; border: 1px solid #d8dde6; padding: 18px; }
+    label { display: block; font-size: 13px; margin-top: 14px; color: #52606d; }
+    input, textarea, select { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 9px; border: 1px solid #bcccdc; }
+    textarea { min-height: 280px; font-family: Consolas, monospace; }
+    button { margin-top: 16px; padding: 10px 14px; border: 0; background: #005fcc; color: white; font-weight: 700; }
+    .status { border-left: 4px solid #005fcc; padding-left: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Claim Intake</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Claim Summary</h2>
+      <label>Policy ID<input value="POL-SYN-EVAL-000001"></label>
+      <label>Product ID<input value="SYN-MED-001"></label>
+      <label>Claim Amount<input value="681994"></label>
+      <label>Care Setting<select><option>outpatient</option><option>inpatient</option><option>pharmacy</option></select></label>
+      <button>Submit Claim</button>
+    </section>
+    <section>
+      <h2>JSON Payload</h2>
+      <p class="status">Paste a claim_review_input JSON payload and submit it to POST /claims.</p>
+      <textarea>{"claim_id":"CLM-EVAL-000001"}</textarea>
+    </section>
+  </main>
+</body>
+</html>
+

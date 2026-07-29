@@ -1,0 +1,30 @@
+{
+  "tool_name": "decision_validator",
+  "version": "1.0.0",
+  "description": "Validate final Agent output against schema and business invariants.",
+  "input_schema": {
+    "type": "object",
+    "required": ["agent_output"],
+    "properties": {
+      "agent_output": { "type": "object" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["valid", "errors", "warnings"],
+    "properties": {
+      "valid": { "type": "boolean" },
+      "errors": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "warnings": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "fail",
+  "owner": "claim-review-template"
+}

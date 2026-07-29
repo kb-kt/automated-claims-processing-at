@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/retrieval_result.schema.json",
+  "title": "Policy Retrieval Result",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query", "matches"],
+  "properties": {
+    "query": { "type": "string", "minLength": 1 },
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "chunk_id",
+          "source",
+          "section",
+          "summary",
+          "text",
+          "retrieval_score",
+          "retrieval_method"
+        ],
+        "properties": {
+          "chunk_id": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 },
+          "section": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "product_id": { "type": "string" },
+          "product_version": { "type": "string" },
+          "effective_date": { "type": "string", "format": "date" },
+          "coverage_code": { "type": "string" },
+          "clause_id": { "type": "string" },
+          "citation_id": { "type": "string" },
+          "retrieval_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "retrieval_method": {
+            "type": "string",
+            "enum": ["keyword", "vector", "hybrid", "structured"]
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

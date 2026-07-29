@@ -1,0 +1,27 @@
+version: 1.0.0
+active_provider: general_llm
+providers:
+  general_llm:
+    provider_type: openai_compatible
+    base_url: https://m2.geniemars.kt.co.kr:10601/v1
+    api_key: dummy
+    model_id: gemma-4-26B-4aB-it
+    temperature: 0
+    response_format: json_schema
+    timeout_ms: 30000
+  insurance_specialized:
+    provider_type: insurance_domain_model
+    base_url: null
+    api_key: null
+    model_id: future-insurance-specialized-model
+    temperature: 0
+    response_format: json_schema
+    timeout_ms: 30000
+  mock:
+    provider_type: local_mock
+    base_url: null
+    api_key: null
+    model_id: mock-claim-reviewer
+    temperature: 0
+    response_format: json_schema
+    timeout_ms: 1000

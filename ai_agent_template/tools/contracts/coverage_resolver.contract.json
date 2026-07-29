@@ -1,0 +1,25 @@
+{
+  "tool_name": "coverage_resolver",
+  "version": "1.0.0",
+  "description": "Resolve the most likely coverage code for a claim.",
+  "input_schema": {
+    "type": "object",
+    "required": ["claim", "product_id"],
+    "properties": {
+      "claim": { "type": "object" },
+      "product_id": { "type": "string" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["coverage_code", "coverage_name", "confidence"],
+    "properties": {
+      "coverage_code": { "type": "string" },
+      "coverage_name": { "type": "string" },
+      "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

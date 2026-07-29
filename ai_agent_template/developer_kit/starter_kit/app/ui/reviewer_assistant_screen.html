@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>Reviewer Assistant</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f6f8; color: #1f2933; }
+    header { background: #ffffff; border-bottom: 1px solid #d8dde6; padding: 18px 28px; }
+    main { display: grid; grid-template-columns: 1fr 360px; gap: 20px; padding: 24px; }
+    section { background: #ffffff; border: 1px solid #d8dde6; padding: 18px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #e4e7eb; padding: 10px; text-align: left; }
+    .decision { font-size: 24px; font-weight: 700; color: #005fcc; }
+    button { margin-right: 8px; padding: 9px 12px; border: 1px solid #829ab1; background: #ffffff; }
+    button.primary { background: #005fcc; color: #ffffff; border-color: #005fcc; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Reviewer Assistant</h1>
+  </header>
+  <main>
+    <section>
+      <div class="decision">partial_pay recommendation</div>
+      <table>
+        <tr><th>Coverage</th><td>COV_OUTPATIENT_NONCOVERED</td></tr>
+        <tr><th>Recommended Payable</th><td>140,000 KRW</td></tr>
+        <tr><th>Reason Codes</th><td>COVERED_INCIDENT, PER_CLAIM_LIMIT_APPLIED, DEDUCTIBLE_APPLIED</td></tr>
+        <tr><th>Human Review</th><td>false</td></tr>
+      </table>
+    </section>
+    <section>
+      <h2>Reviewer Actions</h2>
+      <button class="primary">Approve</button>
+      <button>Override</button>
+      <button>Request Documents</button>
+      <button>Mark Human Review</button>
+    </section>
+  </main>
+</body>
+</html>
+

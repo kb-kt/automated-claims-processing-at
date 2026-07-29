@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/policy_chunk.schema.json",
+  "title": "Policy Knowledge Chunk",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["chunk_id", "source", "section", "text"],
+  "properties": {
+    "chunk_id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "section": { "type": "string", "minLength": 1 },
+    "text": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string" },
+    "product_id": { "type": "string" },
+    "product_version": { "type": "string" },
+    "effective_date": { "type": "string", "format": "date" },
+    "coverage_code": { "type": "string" },
+    "clause_id": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

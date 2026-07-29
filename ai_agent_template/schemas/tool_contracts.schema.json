@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/tool_contracts.schema.json",
+  "title": "Tool Contract",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tool_name",
+    "version",
+    "description",
+    "input_schema",
+    "output_schema",
+    "timeout_ms",
+    "failure_policy",
+    "owner"
+  ],
+  "properties": {
+    "tool_name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "description": { "type": "string", "minLength": 1 },
+    "input_schema": { "type": "object" },
+    "output_schema": { "type": "object" },
+    "timeout_ms": { "type": "integer", "minimum": 1 },
+    "failure_policy": { "type": "string", "enum": ["human_review", "fail", "retry"] },
+    "owner": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/claim_review_input.schema.json",
+  "title": "Claim Review Input",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "policy_id",
+    "product_id",
+    "scenario_type",
+    "insured_profile",
+    "policy",
+    "claim",
+    "documents",
+    "claim_history",
+    "signals"
+  ],
+  "properties": {
+    "claim_id": { "type": "string", "minLength": 1 },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "product_id": { "type": "string", "minLength": 1 },
+    "scenario_type": { "type": "string", "minLength": 1 },
+    "insured_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["insured_id", "age_at_service", "age_band", "sex", "policyholder_relation"],
+      "properties": {
+        "insured_id": { "type": "string", "minLength": 1 },
+        "age_at_service": { "type": "integer", "minimum": 0, "maximum": 120 },
+        "age_band": {
+          "type": "string",
+          "enum": ["0-9", "10s", "20s", "30s", "40s", "50s", "60s", "70s", "80plus"]
+        },
+        "sex": { "type": "string", "enum": ["F", "M", "U"] },
+        "policyholder_relation": {
+          "type": "string",
+          "enum": ["self", "spouse", "child", "parent", "other"]
+        }
+      }
+    },
+    "claimant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["synthetic_person_id", "age", "gender"],
+      "properties": {
+        "synthetic_person_id": { "type": "string", "minLength": 1 },
+        "age": { "type": "integer", "minimum": 0, "maximum": 120 },
+        "gender": { "type": "string", "enum": ["F", "M"] }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "coverage_start_date", "coverage_end_date"],
+      "properties": {
+        "status": { "type": "string", "enum": ["active", "lapsed", "terminated", "pending"] },
+        "coverage_start_date": { "type": "string", "format": "date" },
+        "coverage_end_date": { "type": "string", "format": "date" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "care_setting",
+        "benefit_category",
+        "treatment_code",
+        "diagnosis_code",
+        "incident_date",
+        "treatment_start_date",
+        "treatment_end_date",
+        "claim_date",
+        "claimed_amount",
+        "receipt_id",
+        "receipt_hash",
+        "provider_id",
+        "provider_type"
+      ],
+      "properties": {
+        "care_setting": { "type": "string", "enum": ["outpatient", "inpatient", "pharmacy"] },
+        "benefit_category": { "type": "string", "enum": ["covered", "noncovered", "special_noncovered"] },
+        "treatment_code": { "type": "string", "minLength": 1 },
+        "diagnosis_code": { "type": "string", "minLength": 1 },
+        "incident_date": { "type": "string", "format": "date" },
+        "treatment_start_date": { "type": "string", "format": "date" },
+        "treatment_end_date": { "type": "string", "format": "date" },
+        "claim_date": { "type": "string", "format": "date" },
+        "claimed_amount": { "type": "integer", "minimum": 0 },
+        "receipt_id": { "type": "string", "minLength": 1 },
+        "receipt_hash": { "type": "string", "minLength": 1 },
+        "provider_id": { "type": "string", "minLength": 1 },
+        "provider_type": { "type": "string", "enum": ["medical_institution", "pharmacy", "non_medical_provider"] },
+        "inpatient_days": { "type": "integer", "minimum": 1 },
+        "visit_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "claim_history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "same_diagnosis_claims_90d",
+        "manual_therapy_count_180d",
+        "same_insured_provider_claims_30d",
+        "same_provider_claims_30d",
+        "prior_receipt_hashes",
+        "prior_receipt_ids"
+      ],
+      "properties": {
+        "same_diagnosis_claims_90d": { "type": "integer", "minimum": 0 },
+        "manual_therapy_count_180d": { "type": "integer", "minimum": 0 },
+        "same_insured_provider_claims_30d": { "type": "integer", "minimum": 0 },
+        "same_provider_claims_30d": { "type": "integer", "minimum": 0 },
+        "prior_receipt_hashes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "prior_receipt_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cosmetic_purpose",
+        "pre_existing_condition",
+        "intentional_injury",
+        "non_medical_provider",
+        "suspected_duplicate_receipt",
+        "document_claim_mismatch"
+      ],
+      "properties": {
+        "cosmetic_purpose": { "type": "boolean" },
+        "pre_existing_condition": { "type": "boolean" },
+        "intentional_injury": { "type": "boolean" },
+        "non_medical_provider": { "type": "boolean" },
+        "suspected_duplicate_receipt": { "type": "boolean" },
+        "document_claim_mismatch": { "type": "boolean" },
+        "fraudulent_document": { "type": "boolean" },
+        "abnormal_document_dates": { "type": "boolean" },
+        "high_noncovered_ratio": { "type": "boolean" },
+        "preventive_purpose": { "type": "boolean" },
+        "unsupported_treatment": { "type": "boolean" }
+      }
+    }
+  },
+  "not": {
+    "anyOf": [
+      { "required": ["expected_decision"] },
+      { "required": ["expected_payable_amount"] },
+      { "required": ["expected_explanation"] },
+      { "required": ["reason_codes"] },
+      { "required": ["calculation"] },
+      { "required": ["requires_human_review"] },
+      { "required": ["fraud_suspected"] }
+    ]
+  }
+}

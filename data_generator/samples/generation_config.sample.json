@@ -1,0 +1,76 @@
+{
+  "seed": 20260616,
+  "locale": "ko-KR",
+  "currency": "KRW",
+  "product_id": "SYN-MED-001",
+  "default_output_counts": {
+    "dev": 1000,
+    "eval": 200,
+    "sample": 12
+  },
+  "decision_distribution": {
+    "pay": 0.35,
+    "partial_pay": 0.25,
+    "request_documents": 0.15,
+    "deny": 0.12,
+    "human_review": 0.10,
+    "fraud_suspected_human_review": 0.03
+  },
+  "claim_type_distribution": {
+    "covered_outpatient": 0.35,
+    "noncovered_outpatient": 0.20,
+    "prescription": 0.15,
+    "covered_inpatient": 0.10,
+    "noncovered_inpatient": 0.08,
+    "special_noncovered": 0.10,
+    "edge_case": 0.02
+  },
+  "amount_ranges": {
+    "covered_outpatient": {
+      "min": 20000,
+      "max": 350000
+    },
+    "noncovered_outpatient": {
+      "min": 50000,
+      "max": 700000
+    },
+    "prescription": {
+      "min": 5000,
+      "max": 150000
+    },
+    "inpatient": {
+      "min": 300000,
+      "max": 15000000
+    },
+    "manual_therapy_per_visit": {
+      "min": 80000,
+      "max": 200000
+    },
+    "noncovered_injection": {
+      "min": 50000,
+      "max": 300000
+    },
+    "mri_mra": {
+      "min": 400000,
+      "max": 1500000
+    }
+  },
+  "label_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "split_policy": {
+    "dev_ratio": 0.8,
+    "eval_ratio": 0.2,
+    "stratify_by": [
+      "expected_decision",
+      "coverage_code",
+      "scenario_type"
+    ]
+  }
+}

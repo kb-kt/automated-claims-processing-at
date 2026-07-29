@@ -1,0 +1,59 @@
+version: 1.0.0
+workflow_id: claim_review_v1
+description: Insurance claim review assistant workflow for synthetic indemnity medical claims.
+input_schema: schemas/claim_review_input.schema.json
+output_schema: schemas/claim_review_output.schema.json
+decision_priority:
+  - fraud_or_duplicate_signal
+  - policy_status_or_coverage_period
+  - missing_required_documents
+  - clear_exclusion
+  - mandatory_human_review
+  - payable_calculation
+  - normal_covered_claim
+steps:
+  - id: validate_input
+    type: schema_validation
+    schema: schemas/claim_review_input.schema.json
+    on_failure: fail
+  - id: search_policy
+    type: tool
+    tool: policy_search
+    on_failure: human_review
+  - id: resolve_coverage
+    type: tool
+    tool: coverage_resolver
+    on_failure: human_review
+  - id: check_fraud
+    type: tool
+    tool: fraud_signal_checker
+    on_true: human_review
+    on_failure: human_review
+  - id: check_documents
+    type: tool
+    tool: document_checker
+    on_missing_documents: request_documents
+    on_failure: human_review
+  - id: check_exclusions
+    type: tool
+    tool: exclusion_checker
+    on_excluded: deny
+    on_failure: human_review
+  - id: calculate_payable
+    type: tool
+    tool: payable_calculator
+    on_failure: human_review
+  - id: check_risk
+    type: tool
+    tool: risk_checker
+    on_true: human_review
+    on_failure: human_review
+  - id: generate_summary
+    type: model
+    provider: configurable
+    prompt: prompts/claim_review_prompt.md
+    on_invalid_json: retry_once_then_fail
+  - id: validate_output
+    type: tool
+    tool: decision_validator
+    on_failure: retry_normalization_once_then_fail

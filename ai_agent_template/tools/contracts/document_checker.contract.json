@@ -1,0 +1,34 @@
+{
+  "tool_name": "document_checker",
+  "version": "1.0.0",
+  "description": "Check missing required documents by coverage code.",
+  "input_schema": {
+    "type": "object",
+    "required": ["coverage_code", "submitted_documents"],
+    "properties": {
+      "coverage_code": { "type": "string" },
+      "submitted_documents": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["missing_documents", "submitted_documents", "documents_complete"],
+    "properties": {
+      "missing_documents": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "submitted_documents": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "documents_complete": { "type": "boolean" }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

@@ -1,0 +1,447 @@
+{
+  "version": "1.0.0",
+  "description": "Internal MVP demo scenarios for synthetic workflow verification. Expected values are demo metadata and must not be submitted as claim payload.",
+  "scenarios": [
+    {
+      "id": "normal_pay",
+      "name": "Normal Pay",
+      "category": "payment",
+      "expected_decision": "pay",
+      "expected_fraud_suspected": false,
+      "summary": "Complete covered outpatient claim below the per-claim limit.",
+      "verification_points": [
+        "Coverage resolves to outpatient covered.",
+        "No missing documents are returned.",
+        "Payable amount is calculated by payable_calculator."
+      ],
+      "claim": {
+        "claim_id": "MVP-DEMO-NORMAL-PAY",
+        "policy_id": "POL-MVP-NORMAL-PAY",
+        "product_id": "SYN-MED-001",
+        "scenario_type": "normal_covered_outpatient",
+        "claimant": {
+          "synthetic_person_id": "INS-MVP-NORMAL-PAY",
+          "age": 42,
+          "gender": "F"
+        },
+        "policy": {
+          "status": "active",
+          "coverage_start_date": "2026-01-01",
+          "coverage_end_date": "2026-12-31"
+        },
+        "claim": {
+          "care_setting": "outpatient",
+          "benefit_category": "covered",
+          "treatment_code": "TRT-COLD-001",
+          "diagnosis_code": "SYN-J10",
+          "incident_date": "2026-04-11",
+          "treatment_start_date": "2026-04-12",
+          "treatment_end_date": "2026-04-12",
+          "claim_date": "2026-04-15",
+          "claimed_amount": 50000,
+          "receipt_id": "RCT-MVP-NORMAL-PAY",
+          "provider_type": "medical_institution",
+          "receipt_hash": "RH-RCT-MVP-NORMAL-PAY",
+          "provider_id": "PROV-HOSP-025"
+        },
+        "documents": [
+          "claim_form",
+          "medical_receipt",
+          "medical_statement",
+          "diagnosis_note"
+        ],
+        "claim_history": {
+          "same_diagnosis_claims_90d": 0,
+          "manual_therapy_count_180d": 0,
+          "prior_receipt_ids": [],
+          "same_insured_provider_claims_30d": 0,
+          "same_provider_claims_30d": 0,
+          "prior_receipt_hashes": []
+        },
+        "signals": {
+          "cosmetic_purpose": false,
+          "pre_existing_condition": false,
+          "intentional_injury": false,
+          "non_medical_provider": false,
+          "suspected_duplicate_receipt": false,
+          "document_claim_mismatch": false
+        },
+        "insured_profile": {
+          "insured_id": "INS-MVP-NORMAL-PAY",
+          "age_at_service": 42,
+          "age_band": "40s",
+          "sex": "F",
+          "policyholder_relation": "self"
+        }
+      }
+    },
+    {
+      "id": "partial_pay",
+      "name": "Partial Pay",
+      "category": "payment",
+      "expected_decision": "partial_pay",
+      "expected_fraud_suspected": false,
+      "summary": "Covered outpatient claim above the per-claim limit.",
+      "verification_points": [
+        "Coverage resolves successfully.",
+        "Per-claim limit is applied.",
+        "Deductible is applied after the limit."
+      ],
+      "claim": {
+        "claim_id": "MVP-DEMO-PARTIAL-PAY",
+        "policy_id": "POL-MVP-PARTIAL-PAY",
+        "product_id": "SYN-MED-001",
+        "scenario_type": "limit_exceeded_covered_outpatient",
+        "claimant": {
+          "synthetic_person_id": "INS-MVP-PARTIAL-PAY",
+          "age": 42,
+          "gender": "F"
+        },
+        "policy": {
+          "status": "active",
+          "coverage_start_date": "2026-01-01",
+          "coverage_end_date": "2026-12-31"
+        },
+        "claim": {
+          "care_setting": "outpatient",
+          "benefit_category": "covered",
+          "treatment_code": "TRT-GASTRO-001",
+          "diagnosis_code": "SYN-K30",
+          "incident_date": "2026-04-11",
+          "treatment_start_date": "2026-04-12",
+          "treatment_end_date": "2026-04-12",
+          "claim_date": "2026-04-15",
+          "claimed_amount": 350000,
+          "receipt_id": "RCT-MVP-PARTIAL-PAY",
+          "provider_type": "medical_institution",
+          "receipt_hash": "RH-RCT-MVP-PARTIAL-PAY",
+          "provider_id": "PROV-HOSP-024"
+        },
+        "documents": [
+          "claim_form",
+          "medical_receipt",
+          "medical_statement",
+          "diagnosis_note"
+        ],
+        "claim_history": {
+          "same_diagnosis_claims_90d": 0,
+          "manual_therapy_count_180d": 0,
+          "prior_receipt_ids": [],
+          "same_insured_provider_claims_30d": 0,
+          "same_provider_claims_30d": 0,
+          "prior_receipt_hashes": []
+        },
+        "signals": {
+          "cosmetic_purpose": false,
+          "pre_existing_condition": false,
+          "intentional_injury": false,
+          "non_medical_provider": false,
+          "suspected_duplicate_receipt": false,
+          "document_claim_mismatch": false
+        },
+        "insured_profile": {
+          "insured_id": "INS-MVP-PARTIAL-PAY",
+          "age_at_service": 42,
+          "age_band": "40s",
+          "sex": "F",
+          "policyholder_relation": "self"
+        }
+      }
+    },
+    {
+      "id": "request_documents",
+      "name": "Request Documents",
+      "category": "document",
+      "expected_decision": "request_documents",
+      "expected_fraud_suspected": false,
+      "summary": "Required diagnosis note is missing.",
+      "verification_points": [
+        "Coverage resolves successfully.",
+        "Document checker detects missing document.",
+        "No payable amount is recommended until documents are complete."
+      ],
+      "claim": {
+        "claim_id": "MVP-DEMO-REQUEST-DOCUMENTS",
+        "policy_id": "POL-MVP-REQUEST-DOCUMENTS",
+        "product_id": "SYN-MED-001",
+        "scenario_type": "missing_required_document",
+        "claimant": {
+          "synthetic_person_id": "INS-MVP-REQUEST-DOCUMENTS",
+          "age": 42,
+          "gender": "F"
+        },
+        "policy": {
+          "status": "active",
+          "coverage_start_date": "2026-01-01",
+          "coverage_end_date": "2026-12-31"
+        },
+        "claim": {
+          "care_setting": "outpatient",
+          "benefit_category": "covered",
+          "treatment_code": "TRT-GASTRO-001",
+          "diagnosis_code": "SYN-K30",
+          "incident_date": "2026-04-11",
+          "treatment_start_date": "2026-04-12",
+          "treatment_end_date": "2026-04-12",
+          "claim_date": "2026-04-15",
+          "claimed_amount": 120000,
+          "receipt_id": "RCT-MVP-REQUEST-DOCUMENTS",
+          "provider_type": "medical_institution",
+          "receipt_hash": "RH-RCT-MVP-REQUEST-DOCUMENTS",
+          "provider_id": "PROV-HOSP-012"
+        },
+        "documents": [
+          "claim_form",
+          "medical_receipt",
+          "medical_statement"
+        ],
+        "claim_history": {
+          "same_diagnosis_claims_90d": 0,
+          "manual_therapy_count_180d": 0,
+          "prior_receipt_ids": [],
+          "same_insured_provider_claims_30d": 0,
+          "same_provider_claims_30d": 0,
+          "prior_receipt_hashes": []
+        },
+        "signals": {
+          "cosmetic_purpose": false,
+          "pre_existing_condition": false,
+          "intentional_injury": false,
+          "non_medical_provider": false,
+          "suspected_duplicate_receipt": false,
+          "document_claim_mismatch": false
+        },
+        "insured_profile": {
+          "insured_id": "INS-MVP-REQUEST-DOCUMENTS",
+          "age_at_service": 42,
+          "age_band": "40s",
+          "sex": "F",
+          "policyholder_relation": "self"
+        }
+      }
+    },
+    {
+      "id": "deny",
+      "name": "Deny",
+      "category": "policy",
+      "expected_decision": "deny",
+      "expected_fraud_suspected": false,
+      "summary": "Policy status is lapsed.",
+      "verification_points": [
+        "Policy status is not active.",
+        "Workflow stops before payable calculation.",
+        "Reviewer should verify policy status."
+      ],
+      "claim": {
+        "claim_id": "MVP-DEMO-DENY",
+        "policy_id": "POL-MVP-DENY",
+        "product_id": "SYN-MED-001",
+        "scenario_type": "lapsed_policy",
+        "claimant": {
+          "synthetic_person_id": "INS-MVP-DENY",
+          "age": 42,
+          "gender": "M"
+        },
+        "policy": {
+          "status": "lapsed",
+          "coverage_start_date": "2026-01-01",
+          "coverage_end_date": "2026-12-31"
+        },
+        "claim": {
+          "care_setting": "outpatient",
+          "benefit_category": "covered",
+          "treatment_code": "TRT-COLD-001",
+          "diagnosis_code": "SYN-J10",
+          "incident_date": "2026-04-11",
+          "treatment_start_date": "2026-04-12",
+          "treatment_end_date": "2026-04-12",
+          "claim_date": "2026-04-15",
+          "claimed_amount": 70000,
+          "receipt_id": "RCT-MVP-DENY",
+          "provider_type": "medical_institution",
+          "receipt_hash": "RH-RCT-MVP-DENY",
+          "provider_id": "PROV-HOSP-007"
+        },
+        "documents": [
+          "claim_form",
+          "medical_receipt",
+          "medical_statement",
+          "diagnosis_note"
+        ],
+        "claim_history": {
+          "same_diagnosis_claims_90d": 0,
+          "manual_therapy_count_180d": 0,
+          "prior_receipt_ids": [],
+          "same_insured_provider_claims_30d": 0,
+          "same_provider_claims_30d": 0,
+          "prior_receipt_hashes": []
+        },
+        "signals": {
+          "cosmetic_purpose": false,
+          "pre_existing_condition": false,
+          "intentional_injury": false,
+          "non_medical_provider": false,
+          "suspected_duplicate_receipt": false,
+          "document_claim_mismatch": false
+        },
+        "insured_profile": {
+          "insured_id": "INS-MVP-DENY",
+          "age_at_service": 42,
+          "age_band": "40s",
+          "sex": "M",
+          "policyholder_relation": "self"
+        }
+      }
+    },
+    {
+      "id": "human_review",
+      "name": "Human Review",
+      "category": "risk",
+      "expected_decision": "human_review",
+      "expected_fraud_suspected": false,
+      "summary": "Repeated same-diagnosis history triggers mandatory human review.",
+      "verification_points": [
+        "Documents are complete.",
+        "Payable calculation is available.",
+        "Risk checker requires reviewer confirmation."
+      ],
+      "claim": {
+        "claim_id": "MVP-DEMO-HUMAN-REVIEW",
+        "policy_id": "POL-MVP-HUMAN-REVIEW",
+        "product_id": "SYN-MED-001",
+        "scenario_type": "repeated_same_diagnosis",
+        "claimant": {
+          "synthetic_person_id": "INS-MVP-HUMAN-REVIEW",
+          "age": 42,
+          "gender": "F"
+        },
+        "policy": {
+          "status": "active",
+          "coverage_start_date": "2026-01-01",
+          "coverage_end_date": "2026-12-31"
+        },
+        "claim": {
+          "care_setting": "outpatient",
+          "benefit_category": "covered",
+          "treatment_code": "TRT-COLD-001",
+          "diagnosis_code": "SYN-J10",
+          "incident_date": "2026-04-11",
+          "treatment_start_date": "2026-04-12",
+          "treatment_end_date": "2026-04-12",
+          "claim_date": "2026-04-15",
+          "claimed_amount": 90000,
+          "receipt_id": "RCT-MVP-HUMAN-REVIEW",
+          "provider_type": "medical_institution",
+          "receipt_hash": "RH-RCT-MVP-HUMAN-REVIEW",
+          "provider_id": "PROV-HOSP-018"
+        },
+        "documents": [
+          "claim_form",
+          "medical_receipt",
+          "medical_statement",
+          "diagnosis_note"
+        ],
+        "claim_history": {
+          "same_diagnosis_claims_90d": 5,
+          "manual_therapy_count_180d": 0,
+          "prior_receipt_ids": [],
+          "same_insured_provider_claims_30d": 0,
+          "same_provider_claims_30d": 0,
+          "prior_receipt_hashes": []
+        },
+        "signals": {
+          "cosmetic_purpose": false,
+          "pre_existing_condition": false,
+          "intentional_injury": false,
+          "non_medical_provider": false,
+          "suspected_duplicate_receipt": false,
+          "document_claim_mismatch": false
+        },
+        "insured_profile": {
+          "insured_id": "INS-MVP-HUMAN-REVIEW",
+          "age_at_service": 42,
+          "age_band": "40s",
+          "sex": "F",
+          "policyholder_relation": "self"
+        }
+      }
+    },
+    {
+      "id": "fraud_signal",
+      "name": "Fraud Signal",
+      "category": "risk",
+      "expected_decision": "human_review",
+      "expected_fraud_suspected": true,
+      "summary": "Duplicate receipt signal triggers fraud-suspected human review.",
+      "verification_points": [
+        "Fraud signal checker runs before normal payment decision.",
+        "Human review is mandatory.",
+        "No final payment decision is made by the assistant."
+      ],
+      "claim": {
+        "claim_id": "MVP-DEMO-FRAUD-SIGNAL",
+        "policy_id": "POL-MVP-FRAUD-SIGNAL",
+        "product_id": "SYN-MED-001",
+        "scenario_type": "duplicate_receipt_signal",
+        "claimant": {
+          "synthetic_person_id": "INS-MVP-FRAUD-SIGNAL",
+          "age": 42,
+          "gender": "F"
+        },
+        "policy": {
+          "status": "active",
+          "coverage_start_date": "2026-01-01",
+          "coverage_end_date": "2026-12-31"
+        },
+        "claim": {
+          "care_setting": "outpatient",
+          "benefit_category": "covered",
+          "treatment_code": "TRT-COLD-001",
+          "diagnosis_code": "SYN-J10",
+          "incident_date": "2026-04-11",
+          "treatment_start_date": "2026-04-12",
+          "treatment_end_date": "2026-04-12",
+          "claim_date": "2026-04-15",
+          "claimed_amount": 80000,
+          "receipt_id": "RCT-MVP-FRAUD-SIGNAL",
+          "provider_type": "medical_institution",
+          "receipt_hash": "RH-RCT-MVP-FRAUD-SIGNAL",
+          "provider_id": "PROV-HOSP-014"
+        },
+        "documents": [
+          "claim_form",
+          "medical_receipt",
+          "medical_statement",
+          "diagnosis_note"
+        ],
+        "claim_history": {
+          "same_diagnosis_claims_90d": 0,
+          "manual_therapy_count_180d": 0,
+          "prior_receipt_ids": [
+            "RCT-MVP-FRAUD-SIGNAL"
+          ],
+          "same_insured_provider_claims_30d": 0,
+          "same_provider_claims_30d": 0,
+          "prior_receipt_hashes": [
+            "RH-RCT-MVP-FRAUD-SIGNAL"
+          ]
+        },
+        "signals": {
+          "cosmetic_purpose": false,
+          "pre_existing_condition": false,
+          "intentional_injury": false,
+          "non_medical_provider": false,
+          "suspected_duplicate_receipt": true,
+          "document_claim_mismatch": false
+        },
+        "insured_profile": {
+          "insured_id": "INS-MVP-FRAUD-SIGNAL",
+          "age_at_service": 42,
+          "age_band": "40s",
+          "sex": "F",
+          "policyholder_relation": "self"
+        }
+      }
+    }
+  ]
+}

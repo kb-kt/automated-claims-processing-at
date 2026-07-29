@@ -1,0 +1,56 @@
+version: 1.0.0
+description: Synthetic-data MVP thresholds for insurance claim review Agent evaluation.
+hard_thresholds:
+  schema_validity:
+    operator: "=="
+    target: 1.0
+  decision_accuracy:
+    operator: ">="
+    target: 0.90
+  coverage_accuracy:
+    operator: ">="
+    target: 0.95
+  payable_amount_exact_match:
+    operator: ">="
+    target: 0.95
+  missing_document_exact_match:
+    operator: ">="
+    target: 0.95
+  human_review_recall:
+    operator: ">="
+    target: 0.98
+  fraud_suspected_recall:
+    operator: ">="
+    target: 0.98
+  false_denial_rate:
+    operator: "<="
+    target: 0.01
+  human_review_miss_rate:
+    operator: "<="
+    target: 0.01
+soft_thresholds:
+  reason_code_overlap:
+    operator: ">="
+    target: 0.80
+  payable_amount_mae:
+    operator: "<="
+    target: 1000
+  false_payment_rate:
+    operator: "<="
+    target: 0.02
+  underpayment_rate:
+    operator: "<="
+    target: 0.03
+  overpayment_rate:
+    operator: "<="
+    target: 0.03
+critical_failure_limits:
+  label_leakage_count:
+    operator: "=="
+    target: 0
+  forbidden_final_wording_count:
+    operator: "=="
+    target: 0
+  invalid_json_count:
+    operator: "=="
+    target: 0

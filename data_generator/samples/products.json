@@ -1,0 +1,246 @@
+{
+  "product_id": "SYN-MED-001",
+  "product_name": "Synthetic Medical Guard 4",
+  "product_type": "synthetic_indemnity_medical",
+  "version": "1.0.0",
+  "currency": "KRW",
+  "effective_date": "2026-01-01",
+  "description": "Agent development and evaluation only. This fictional product approximates common indemnity medical insurance patterns without copying any real insurer terms.",
+  "coverages": [
+    {
+      "coverage_code": "COV_OUTPATIENT_COVERED",
+      "name": "급여 통원 의료비",
+      "care_setting": "outpatient",
+      "benefit_category": "covered",
+      "limit_per_claim": 200000,
+      "annual_limit": 10000000,
+      "deductible": {
+        "type": "max_of_fixed_and_rate",
+        "fixed_amount": 10000,
+        "rate": 0.2
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "diagnosis_note"
+      ]
+    },
+    {
+      "coverage_code": "COV_OUTPATIENT_NONCOVERED",
+      "name": "비급여 통원 의료비",
+      "care_setting": "outpatient",
+      "benefit_category": "noncovered",
+      "limit_per_claim": 200000,
+      "annual_limit": 10000000,
+      "deductible": {
+        "type": "max_of_fixed_and_rate",
+        "fixed_amount": 30000,
+        "rate": 0.3
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "diagnosis_note"
+      ]
+    },
+    {
+      "coverage_code": "COV_PRESCRIPTION",
+      "name": "처방조제비",
+      "care_setting": "pharmacy",
+      "benefit_category": "covered",
+      "limit_per_claim": 100000,
+      "annual_limit": 3000000,
+      "deductible": {
+        "type": "max_of_fixed_and_rate",
+        "fixed_amount": 8000,
+        "rate": 0.2
+      },
+      "required_documents": [
+        "claim_form",
+        "pharmacy_receipt",
+        "prescription"
+      ]
+    },
+    {
+      "coverage_code": "COV_INPATIENT_COVERED",
+      "name": "급여 입원 의료비",
+      "care_setting": "inpatient",
+      "benefit_category": "covered",
+      "annual_limit": 50000000,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.2
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "hospitalization_certificate",
+        "diagnosis_certificate"
+      ]
+    },
+    {
+      "coverage_code": "COV_INPATIENT_NONCOVERED",
+      "name": "비급여 입원 의료비",
+      "care_setting": "inpatient",
+      "benefit_category": "noncovered",
+      "annual_limit": 50000000,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.3
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "hospitalization_certificate",
+        "diagnosis_certificate"
+      ]
+    },
+    {
+      "coverage_code": "COV_SPECIAL_MANUAL_THERAPY",
+      "name": "도수치료/체외충격파/증식치료",
+      "care_setting": "outpatient",
+      "benefit_category": "special_noncovered",
+      "annual_limit": 3500000,
+      "annual_count_limit": 50,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.3
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "physician_opinion"
+      ]
+    },
+    {
+      "coverage_code": "COV_SPECIAL_INJECTION",
+      "name": "비급여 주사료",
+      "care_setting": "outpatient",
+      "benefit_category": "special_noncovered",
+      "annual_limit": 2500000,
+      "annual_count_limit": 50,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.3
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "physician_opinion"
+      ]
+    },
+    {
+      "coverage_code": "COV_SPECIAL_MRI_MRA",
+      "name": "비급여 MRI/MRA",
+      "care_setting": "outpatient",
+      "benefit_category": "special_noncovered",
+      "annual_limit": 3000000,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.3
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "medical_statement",
+        "physician_opinion",
+        "diagnosis_note"
+      ]
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_LAPSED_POLICY",
+      "name": "계약 실효 상태"
+    },
+    {
+      "code": "EXC_BEFORE_COVERAGE_START",
+      "name": "보장개시일 이전 사고 또는 진료"
+    },
+    {
+      "code": "EXC_COSMETIC",
+      "name": "미용 목적 치료"
+    },
+    {
+      "code": "EXC_PREVENTIVE",
+      "name": "건강검진, 예방접종, 영양제 등 치료 목적 불명확 비용"
+    },
+    {
+      "code": "EXC_INTENTIONAL",
+      "name": "고의 사고"
+    },
+    {
+      "code": "EXC_FRAUDULENT_DOCUMENT",
+      "name": "허위 또는 위조 서류"
+    },
+    {
+      "code": "EXC_PRE_EXISTING_WAITING_PERIOD",
+      "name": "기왕증 면책 기간 내 청구"
+    },
+    {
+      "code": "EXC_NON_MEDICAL_PROVIDER",
+      "name": "비의료기관 이용"
+    },
+    {
+      "code": "EXC_UNSUPPORTED_TREATMENT",
+      "name": "약관상 보장하지 않는 진단 또는 치료 코드"
+    },
+    {
+      "code": "EXC_DUPLICATE_RECEIPT",
+      "name": "동일 영수증 중복 청구"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_HIGH_OUTPATIENT_AMOUNT",
+      "condition": "outpatient claimed_amount >= 1000000"
+    },
+    {
+      "code": "HR_HIGH_INPATIENT_AMOUNT",
+      "condition": "inpatient claimed_amount >= 10000000"
+    },
+    {
+      "code": "HR_REPEATED_SAME_DIAGNOSIS",
+      "condition": "same diagnosis code claimed at least 3 times within 90 days"
+    },
+    {
+      "code": "HR_MANUAL_THERAPY_FREQUENT",
+      "condition": "manual therapy count is at least 20 within 180 days"
+    },
+    {
+      "code": "HR_LATE_FIRST_TREATMENT",
+      "condition": "days between incident date and first treatment date exceeds 30"
+    },
+    {
+      "code": "HR_DOCUMENT_CLAIM_MISMATCH",
+      "condition": "diagnosis, treatment, or document details do not match the claimed coverage"
+    },
+    {
+      "code": "HR_ABNORMAL_DOCUMENT_DATES",
+      "condition": "document issue date precedes treatment date or follows claim date abnormally"
+    },
+    {
+      "code": "HR_DUPLICATE_RECEIPT",
+      "condition": "receipt id has already been used"
+    },
+    {
+      "code": "HR_HIGH_NONCOVERED_RATIO",
+      "condition": "noncovered ratio is at least 80 percent and claimed amount is high"
+    }
+  ]
+}

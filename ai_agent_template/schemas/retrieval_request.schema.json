@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/retrieval_request.schema.json",
+  "title": "Policy Retrieval Request",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query"],
+  "properties": {
+    "query": { "type": "string", "minLength": 1 },
+    "top_k": { "type": "integer", "minimum": 1, "maximum": 20, "default": 3 },
+    "retrieval_mode": {
+      "type": "string",
+      "enum": ["keyword", "vector", "hybrid", "structured"],
+      "default": "keyword"
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "product_id": { "type": "string" },
+        "product_version": { "type": "string" },
+        "effective_date": { "type": "string", "format": "date" },
+        "coverage_code": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "tool_name": "payable_calculator",
+  "version": "1.0.0",
+  "description": "Calculate payable amount with coverage limits and deductible rules.",
+  "input_schema": {
+    "type": "object",
+    "required": ["coverage_code", "claimed_amount", "claim"],
+    "properties": {
+      "coverage_code": { "type": "string" },
+      "claimed_amount": { "type": "integer", "minimum": 0 },
+      "claim": { "type": "object" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["claimed_amount", "eligible_amount", "limit_applied", "deductible_amount", "payable_amount"],
+    "properties": {
+      "claimed_amount": { "type": "integer", "minimum": 0 },
+      "eligible_amount": { "type": "integer", "minimum": 0 },
+      "limit_applied": { "type": "boolean" },
+      "deductible_amount": { "type": "integer", "minimum": 0 },
+      "payable_amount": { "type": "integer", "minimum": 0 }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

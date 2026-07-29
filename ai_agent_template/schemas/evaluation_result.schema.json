@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/evaluation_result.schema.json",
+  "title": "Evaluation Result",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "dataset_name", "metrics", "passed", "thresholds"],
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "dataset_name": { "type": "string", "minLength": 1 },
+    "passed": { "type": "boolean" },
+    "metrics": { "type": "object" },
+    "thresholds": { "type": "object" },
+    "failure_cases_path": { "type": "string" }
+  }
+}

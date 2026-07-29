@@ -1,0 +1,20 @@
+version: 1.0.0
+codes:
+  - code: claim_form
+    label_ko: 보험금 청구서
+  - code: medical_receipt
+    label_ko: 진료비 영수증
+  - code: medical_statement
+    label_ko: 진료비 세부산정내역서
+  - code: diagnosis_note
+    label_ko: 진단명 확인 서류
+  - code: pharmacy_receipt
+    label_ko: 약제비 영수증
+  - code: prescription
+    label_ko: 처방전
+  - code: hospitalization_certificate
+    label_ko: 입퇴원확인서
+  - code: diagnosis_certificate
+    label_ko: 진단서
+  - code: physician_opinion
+    label_ko: 의사 소견서

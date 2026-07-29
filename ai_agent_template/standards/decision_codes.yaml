@@ -1,0 +1,17 @@
+version: 1.0.0
+codes:
+  - code: pay
+    label_ko: 지급 권고
+    description: 보장대상이며 필수서류와 계산 기준상 지급 권고가 가능한 상태
+  - code: partial_pay
+    label_ko: 일부 지급 권고
+    description: 보장대상이지만 한도, 자기부담금, 일부 비보장 요소로 전액 지급이 어려운 상태
+  - code: request_documents
+    label_ko: 추가서류 요청 권고
+    description: 필수서류 누락으로 심사 보류 및 추가서류 요청이 필요한 상태
+  - code: deny
+    label_ko: 부지급 검토 권고
+    description: 계약, 보장기간, 면책 등 명확한 부지급 검토 사유가 있는 상태
+  - code: human_review
+    label_ko: 사람 심사 필요
+    description: 자동 권고를 확정하지 않고 심사자 검토가 필요한 상태

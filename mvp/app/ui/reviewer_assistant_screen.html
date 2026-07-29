@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reviewer Assistant</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --line: #d7dfeb;
+      --text: #17202f;
+      --muted: #607084;
+      --brand: #155e75;
+      --green: #0b6b45;
+      --amber: #985a00;
+      --red: #b42318;
+      --blue: #1d4ed8;
+      --soft: #edf7f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      font-size: 13px;
+    }
+    header {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: 18px; letter-spacing: 0; min-width: 190px; }
+    header input { width: min(380px, 42vw); }
+    .claim-picker {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(190px, 0.8fr);
+      gap: 8px;
+      flex: 1 1 520px;
+      min-width: 320px;
+    }
+    .claim-picker input,
+    .claim-picker select { width: 100%; }
+    input, select, textarea {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      min-height: 36px;
+      padding: 8px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+    button {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+    main {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr) minmax(300px, 0.9fr);
+      gap: 14px;
+      padding: 16px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+    }
+    .wide { grid-column: 1 / -1; }
+    .head {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    h2 { margin: 0; font-size: 14px; }
+    .body { padding: 14px; display: grid; gap: 12px; }
+    .row {
+      display: grid;
+      grid-template-columns: 132px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      border-bottom: 1px solid #edf1f6;
+      padding-bottom: 8px;
+    }
+    .row span:first-child { color: var(--muted); }
+    .metric { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 74px;
+      display: grid;
+      gap: 6px;
+      background: #fff;
+    }
+    .tile span { color: var(--muted); }
+    .tile strong { font-size: 19px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-weight: 700;
+      font-size: 12px;
+      background: #eef4ff;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+    .pay, .partial_pay { background: #e8f7ef; color: var(--green); }
+    .request_documents { background: #fff4df; color: var(--amber); }
+    .deny { background: #ffe8e5; color: var(--red); }
+    .human_review { background: #e9efff; color: var(--blue); }
+    pre {
+      margin: 0;
+      padding: 10px;
+      border-radius: 6px;
+      background: #101828;
+      color: #edf5ff;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 340px;
+      font-size: 12px;
+    }
+    ul { margin: 0; padding-left: 18px; }
+    textarea { width: 100%; min-height: 78px; resize: vertical; }
+    .actions { display: grid; gap: 8px; }
+    .ops { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .loading-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--blue);
+      font-weight: 700;
+      min-height: 18px;
+    }
+    .loading-inline[hidden] { display: none; }
+    .spinner {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 2px solid #bfdbfe;
+      border-top-color: var(--blue);
+      animation: spin 0.75s linear infinite;
+      flex: 0 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .message { color: var(--muted); min-height: 18px; }
+    .message.error { color: var(--red); }
+    .message.ok { color: var(--green); }
+    @media (max-width: 1100px) {
+      main { grid-template-columns: 1fr; padding: 12px; }
+      header { flex-wrap: wrap; }
+      header input { width: 100%; }
+      .wide { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Reviewer Assistant</h1>
+    <div class="claim-picker">
+      <input id="claimId" placeholder="Claim ID" value="MVP-CLAIM-0001" autocomplete="off">
+      <select id="claimSelect" aria-label="Submitted claim list">
+        <option value="">Submitted Claims</option>
+      </select>
+    </div>
+    <button id="loadBtn">Load Claim</button>
+    <button class="primary" id="reviewBtn">Run Review</button>
+    <span id="reviewLoading" class="loading-inline" hidden><span class="spinner"></span>Review running</span>
+    <span class="message" id="topMessage"></span>
+  </header>
+  <main>
+    <section>
+      <div class="head"><h2>Claim Summary</h2><span class="badge" id="claimStatus">Idle</span></div>
+      <div class="body">
+        <div class="row"><span>Claim ID</span><strong id="summaryClaim">-</strong></div>
+        <div class="row"><span>Insured</span><strong id="summaryInsured">-</strong></div>
+        <div class="row"><span>Product</span><strong id="summaryProduct">-</strong></div>
+        <div class="row"><span>Care Setting</span><strong id="summaryCare">-</strong></div>
+        <div class="row"><span>Claimed Amount</span><strong id="summaryAmount">-</strong></div>
+        <div class="row"><span>Documents</span><ul id="documents"></ul></div>
+        <pre id="claimJson">{}</pre>
+      </div>
+    </section>
+    <section>
+      <div class="head"><h2>Assistant Recommendation</h2><span class="badge" id="decisionBadge">Not Run</span></div>
+      <div class="body">
+        <div class="metric">
+          <div class="tile"><span>Recommended Payable</span><strong id="payable">-</strong></div>
+          <div class="tile"><span>Deterministic Confidence</span><strong id="confidence">-</strong></div>
+          <div class="tile"><span>Evidence Clarity</span><strong id="evidenceClarity">-</strong></div>
+          <div class="tile"><span>Judgment Difficulty</span><strong id="judgmentDifficulty">-</strong></div>
+          <div class="tile"><span>Explanation Confidence</span><strong id="explanationScore">-</strong></div>
+          <div class="tile"><span>Faithfulness</span><strong id="faithfulnessToTools">-</strong></div>
+        </div>
+        <div class="row"><span>Uncertainty</span><div><strong id="uncertaintyLevel">-</strong><div id="uncertaintyExplanation">-</div></div></div>
+        <div class="row"><span>Assessment Basis</span><ul id="assessmentBasis"></ul></div>
+        <div class="row"><span>Explanation Check</span><div><strong id="citationAlignment">-</strong> / <strong id="calculationAlignment">-</strong><div id="unsupportedClaims">-</div></div></div>
+        <div class="row"><span>Validation Issues</span><ul id="explanationIssues"></ul></div>
+        <div class="row"><span>Coverage</span><strong id="coverage">-</strong></div>
+        <div class="row"><span>Calculation</span><pre id="calculation">{}</pre></div>
+        <div class="row"><span>Missing Docs</span><ul id="missingDocs"></ul></div>
+        <div class="row"><span>Reasons</span><ul id="reasons"></ul></div>
+        <div class="row"><span>Summary</span><div id="reviewSummary">-</div></div>
+        <div class="row"><span>Reviewer Notes</span><ul id="reviewerNotes"></ul></div>
+      </div>
+    </section>
+    <section>
+      <div class="head"><h2>Evidence & Action</h2></div>
+      <div class="body">
+        <div>
+          <h2>Policy Basis</h2>
+          <div id="policyBasis" class="body"></div>
+        </div>
+        <div class="actions">
+          <select id="action">
+            <option value="accept_recommendation">Accept Recommendation</option>
+            <option value="modify_recommendation">Modify Recommendation</option>
+            <option value="request_documents">Request Documents</option>
+            <option value="defer">Defer</option>
+            <option value="mark_human_review">Mark Human Review</option>
+          </select>
+          <textarea id="reviewerNote" placeholder="Reviewer note"></textarea>
+          <button class="primary" id="actionBtn">Save Action</button>
+          <span class="message" id="actionMessage"></span>
+        </div>
+      </div>
+    </section>
+    <section class="wide">
+      <div class="head"><h2>Evaluation, Standards & Config</h2><span class="badge">Stage 3</span></div>
+      <div class="body">
+        <div class="ops">
+          <button id="evalBtn">Run Evaluation</button>
+          <button id="queueBtn">Load Queue</button>
+          <button id="historyBtn">Load Actions</button>
+          <button id="auditBtn">Load Audit</button>
+          <button id="standardsBtn">Load Standards</button>
+          <button id="configBtn">Load Config</button>
+          <span class="message" id="opsMessage"></span>
+        </div>
+        <pre id="opsJson">{}</pre>
+      </div>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let claim = null;
+    let review = null;
+
+    function setMessage(id, text, type = "") {
+      $(id).textContent = text;
+      $(id).className = `message ${type}`.trim();
+    }
+
+    function list(id, values) {
+      const node = $(id);
+      node.innerHTML = "";
+      (values && values.length ? values : ["-"]).forEach((value) => {
+        const li = document.createElement("li");
+        li.textContent = value;
+        node.appendChild(li);
+      });
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const body = await response.json();
+      if (!response.ok) throw new Error(JSON.stringify(body.detail || body));
+      return body;
+    }
+
+    async function loadClaimOptions({ silent = false } = {}) {
+      if (!silent) setMessage("topMessage", "Loading claim list");
+      try {
+        const data = await requestJson("/claims?limit=50");
+        const options = $("claimSelect");
+        options.innerHTML = '<option value="">Submitted Claims</option>';
+        (data.claims || []).forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.claim_id;
+          option.textContent = [item.claim_id, item.status, item.product_id].filter(Boolean).join(" | ");
+          options.appendChild(option);
+        });
+        if (!silent) setMessage("topMessage", `${(data.claims || []).length} claims available`, "ok");
+      } catch (error) {
+        if (!silent) setMessage("topMessage", error.message, "error");
+      }
+    }
+
+    function renderClaim(data) {
+      claim = data;
+      const profile = data.insured_profile || {};
+      $("claimStatus").textContent = "Loaded";
+      $("summaryClaim").textContent = data.claim_id;
+      $("summaryInsured").textContent = `${profile.insured_id || "-"} / ${profile.age_at_service ?? "-"} / ${profile.sex || "-"}`;
+      $("summaryProduct").textContent = data.product_id;
+      $("summaryCare").textContent = `${data.claim.care_setting} / ${data.claim.benefit_category}`;
+      $("summaryAmount").textContent = `${data.claim.claimed_amount} KRW`;
+      list("documents", data.documents);
+      $("claimJson").textContent = JSON.stringify(data, null, 2);
+    }
+
+    function renderReview(data) {
+      review = data.output || data;
+      const decision = review.recommended_decision || "-";
+      $("decisionBadge").textContent = decision;
+      $("decisionBadge").className = `badge ${decision}`;
+      $("payable").textContent = `${review.recommended_payable_amount || 0} KRW`;
+      $("confidence").textContent = formatPercent(review.confidence);
+      const assessment = review.confidence_assessment || {};
+      $("evidenceClarity").textContent = assessment.evidence_clarity || "-";
+      $("judgmentDifficulty").textContent = assessment.judgment_difficulty || "-";
+      $("uncertaintyLevel").textContent = assessment.uncertainty_level || "-";
+      $("uncertaintyExplanation").textContent = assessment.uncertainty_explanation || "-";
+      list("assessmentBasis", assessment.assessment_basis);
+      const explanationConfidence = review.explanation_confidence || {};
+      $("explanationScore").textContent = formatPercent(explanationConfidence.score);
+      $("faithfulnessToTools").textContent = explanationConfidence.faithfulness_to_tools || "-";
+      $("citationAlignment").textContent = `citation ${explanationConfidence.citation_alignment || "-"}`;
+      $("calculationAlignment").textContent = `calculation ${explanationConfidence.calculation_alignment || "-"}`;
+      $("unsupportedClaims").textContent = `unsupported claims: ${explanationConfidence.unsupported_claims_detected === true ? "yes" : "no"}`;
+      list("explanationIssues", explanationConfidence.validation_issues);
+      $("coverage").textContent = `${review.coverage_code} / ${review.coverage_name}`;
+      $("calculation").textContent = JSON.stringify(review.calculation || {}, null, 2);
+      list("missingDocs", review.missing_documents);
+      list("reasons", review.reason_codes);
+      $("reviewSummary").textContent = review.review_summary || "-";
+      list("reviewerNotes", review.reviewer_notes);
+      const basis = $("policyBasis");
+      basis.innerHTML = "";
+      (review.policy_basis || []).forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "tile";
+        div.innerHTML = `
+          <span>${item.source || "-"} / ${item.section || "-"}</span>
+          <strong>${item.clause_id || item.citation_id || "policy basis"}</strong>
+          <div>${item.summary || ""}</div>
+          <span>score ${item.retrieval_score ?? "-"} | ${item.retrieval_method || "-"}</span>
+        `;
+        basis.appendChild(div);
+      });
+    }
+
+    function resetReviewPanels(state = "Not Run") {
+      review = null;
+      $("decisionBadge").textContent = state;
+      $("decisionBadge").className = "badge";
+      $("payable").textContent = "-";
+      $("confidence").textContent = "-";
+      $("evidenceClarity").textContent = "-";
+      $("judgmentDifficulty").textContent = "-";
+      $("explanationScore").textContent = "-";
+      $("faithfulnessToTools").textContent = "-";
+      $("uncertaintyLevel").textContent = "-";
+      $("uncertaintyExplanation").textContent = "-";
+      list("assessmentBasis", []);
+      $("citationAlignment").textContent = "-";
+      $("calculationAlignment").textContent = "-";
+      $("unsupportedClaims").textContent = "-";
+      list("explanationIssues", []);
+      $("coverage").textContent = "-";
+      $("calculation").textContent = "{}";
+      list("missingDocs", []);
+      list("reasons", []);
+      $("reviewSummary").textContent = "-";
+      list("reviewerNotes", []);
+      $("policyBasis").innerHTML = '<div class="tile"><span>No review result</span><div>Run Review to load policy basis.</div></div>';
+      $("reviewerNote").value = "";
+      setMessage("actionMessage", "");
+    }
+
+    function setReviewLoading(isLoading) {
+      $("reviewBtn").disabled = isLoading;
+      $("loadBtn").disabled = isLoading;
+      $("reviewLoading").hidden = !isLoading;
+      if (isLoading) {
+        resetReviewPanels("Running");
+      }
+    }
+
+    function formatPercent(value) {
+      if (value == null || Number.isNaN(Number(value))) return "-";
+      return `${Math.round(Number(value) * 100)}%`;
+    }
+
+    async function loadClaim() {
+      setMessage("topMessage", "Loading");
+      resetReviewPanels("Not Run");
+      try {
+        const data = await requestJson(`/claims/${encodeURIComponent($("claimId").value.trim())}`);
+        renderClaim(data);
+        setMessage("topMessage", "Claim loaded", "ok");
+      } catch (error) {
+        setMessage("topMessage", error.message, "error");
+      }
+    }
+
+    async function runReview() {
+      setMessage("topMessage", "Running review");
+      setReviewLoading(true);
+      try {
+        const data = await requestJson("/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ claim_id: $("claimId").value.trim(), mode: "standard" })
+        });
+        renderReview(data);
+        setMessage("topMessage", "Review completed", "ok");
+      } catch (error) {
+        resetReviewPanels("Review Failed");
+        setMessage("topMessage", error.message, "error");
+      } finally {
+        setReviewLoading(false);
+      }
+    }
+
+    async function saveAction() {
+      setMessage("actionMessage", "Saving");
+      try {
+        const claimId = $("claimId").value.trim();
+        const body = {
+          action: $("action").value,
+          reviewer_id: "reviewer-001",
+          reviewer_note: $("reviewerNote").value,
+          override_decision: null,
+          override_payable_amount: null
+        };
+        const data = await requestJson(`/reviews/${encodeURIComponent(claimId)}/actions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        setMessage("actionMessage", `${data.action} stored`, "ok");
+      } catch (error) {
+        setMessage("actionMessage", error.message, "error");
+      }
+    }
+
+    async function runEvaluation() {
+      setMessage("opsMessage", "Running");
+      try {
+        const data = await requestJson("/evaluations/runs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dataset_name: "ui-smoke", max_rows: 5 })
+        });
+        $("opsJson").textContent = JSON.stringify(data, null, 2);
+        setMessage("opsMessage", "Evaluation completed", "ok");
+      } catch (error) {
+        setMessage("opsMessage", error.message, "error");
+      }
+    }
+
+    async function loadQueue() {
+      setMessage("opsMessage", "Loading queue");
+      try {
+        const data = await requestJson("/reviews/queue?limit=50&sla_hours=24");
+        $("opsJson").textContent = JSON.stringify(data, null, 2);
+        setMessage("opsMessage", "Queue loaded", "ok");
+      } catch (error) {
+        setMessage("opsMessage", error.message, "error");
+      }
+    }
+
+    async function loadActions() {
+      setMessage("opsMessage", "Loading actions");
+      try {
+        const claimId = $("claimId").value.trim();
+        const data = await requestJson(`/reviews/${encodeURIComponent(claimId)}/actions`);
+        $("opsJson").textContent = JSON.stringify(data, null, 2);
+        setMessage("opsMessage", "Actions loaded", "ok");
+      } catch (error) {
+        setMessage("opsMessage", error.message, "error");
+      }
+    }
+
+    async function loadAuditLogs() {
+      setMessage("opsMessage", "Loading audit logs");
+      try {
+        const claimId = $("claimId").value.trim();
+        const data = await requestJson(`/reviews/${encodeURIComponent(claimId)}/audit-logs?limit=100`);
+        $("opsJson").textContent = JSON.stringify(data, null, 2);
+        setMessage("opsMessage", "Audit logs loaded", "ok");
+      } catch (error) {
+        setMessage("opsMessage", error.message, "error");
+      }
+    }
+
+    async function loadStandards() {
+      setMessage("opsMessage", "Loading");
+      try {
+        const data = await requestJson("/standards");
+        $("opsJson").textContent = JSON.stringify(data, null, 2);
+        setMessage("opsMessage", "Standards loaded", "ok");
+      } catch (error) {
+        setMessage("opsMessage", error.message, "error");
+      }
+    }
+
+    async function loadConfig() {
+      setMessage("opsMessage", "Loading");
+      try {
+        const data = await requestJson("/configs/model");
+        $("opsJson").textContent = JSON.stringify(data, null, 2);
+        setMessage("opsMessage", "Config loaded", "ok");
+      } catch (error) {
+        setMessage("opsMessage", error.message, "error");
+      }
+    }
+
+    $("loadBtn").addEventListener("click", loadClaim);
+    $("claimId").addEventListener("focus", () => loadClaimOptions({ silent: true }));
+    $("claimId").addEventListener("click", () => loadClaimOptions({ silent: true }));
+    $("claimSelect").addEventListener("focus", () => loadClaimOptions({ silent: true }));
+    $("claimSelect").addEventListener("click", () => loadClaimOptions({ silent: true }));
+    $("claimSelect").addEventListener("change", () => {
+      if ($("claimSelect").value) {
+        $("claimId").value = $("claimSelect").value;
+        setMessage("topMessage", "Claim ID selected", "ok");
+      }
+    });
+    $("reviewBtn").addEventListener("click", runReview);
+    $("actionBtn").addEventListener("click", saveAction);
+    $("evalBtn").addEventListener("click", runEvaluation);
+    $("queueBtn").addEventListener("click", loadQueue);
+    $("historyBtn").addEventListener("click", loadActions);
+    $("auditBtn").addEventListener("click", loadAuditLogs);
+    $("standardsBtn").addEventListener("click", loadStandards);
+    $("configBtn").addEventListener("click", loadConfig);
+    loadClaimOptions({ silent: true });
+    resetReviewPanels("Not Run");
+  </script>
+</body>
+</html>

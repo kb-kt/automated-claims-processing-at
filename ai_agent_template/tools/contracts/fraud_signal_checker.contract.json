@@ -1,0 +1,29 @@
+{
+  "tool_name": "fraud_signal_checker",
+  "version": "1.0.0",
+  "description": "Detect duplicate receipt, fraudulent document, or abnormal token/hash/aggregate fraud signals.",
+  "input_schema": {
+    "type": "object",
+    "required": ["claim", "claim_history", "signals", "insured_profile"],
+    "properties": {
+      "claim": { "type": "object" },
+      "claim_history": { "type": "object" },
+      "signals": { "type": "object" },
+      "insured_profile": { "type": "object" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["fraud_suspected", "fraud_reason_codes"],
+    "properties": {
+      "fraud_suspected": { "type": "boolean" },
+      "fraud_reason_codes": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

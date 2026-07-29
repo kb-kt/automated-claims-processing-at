@@ -1,0 +1,29 @@
+{
+  "tool_name": "exclusion_checker",
+  "version": "1.0.0",
+  "description": "Check whether clear exclusion conditions apply.",
+  "input_schema": {
+    "type": "object",
+    "required": ["claim", "policy", "signals"],
+    "properties": {
+      "claim": { "type": "object" },
+      "policy": { "type": "object" },
+      "signals": { "type": "object" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["excluded", "exclusion_reason_codes", "explanation"],
+    "properties": {
+      "excluded": { "type": "boolean" },
+      "exclusion_reason_codes": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "explanation": { "type": "string" }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

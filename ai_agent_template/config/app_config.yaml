@@ -1,0 +1,12 @@
+version: 1.0.0
+api_framework: FastAPI
+openapi_version: 3.1.0
+json_schema_draft: "2020-12"
+runtime:
+  sqlite_path: ai_agent_template/runtime/agent_template.sqlite3
+  docker_enabled: false
+defaults:
+  strict_schema: true
+  coverage_confidence_threshold: 0.75
+  force_human_review_on_tool_failure: true
+  output_language: ko

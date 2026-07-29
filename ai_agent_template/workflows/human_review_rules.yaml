@@ -1,0 +1,41 @@
+version: 1.0.0
+rules:
+  - id: HR_DUPLICATE_RECEIPT
+    reason_code: DUPLICATE_RECEIPT_SUSPECTED
+    condition: receipt_id appears in claim_history.prior_receipt_ids or signals.suspected_duplicate_receipt is true
+  - id: HR_FRAUD_SIGNAL
+    reason_code: FRAUD_SIGNAL
+    condition: any explicit fraud or fraudulent document signal is true
+  - id: HR_SAME_INSURED_PROVIDER_REPEAT
+    reason_code: SAME_INSURED_PROVIDER_REPEAT_SUSPECTED
+    condition: claim_history.same_insured_provider_claims_30d >= 3 using insured_id and provider_id tokens only
+  - id: HR_PROVIDER_PATTERN_ANOMALY
+    reason_code: PROVIDER_PATTERN_ANOMALY_SUSPECTED
+    condition: claim_history.same_provider_claims_30d >= 50 using provider_id token aggregate only
+  - id: HR_HIGH_OUTPATIENT_AMOUNT
+    reason_code: HIGH_OUTPATIENT_AMOUNT
+    condition: claim.care_setting == outpatient and claim.claimed_amount >= 1000000
+  - id: HR_HIGH_INPATIENT_AMOUNT
+    reason_code: HIGH_INPATIENT_AMOUNT
+    condition: claim.care_setting == inpatient and claim.claimed_amount >= 10000000
+  - id: HR_AGE_BASED_REVIEW
+    reason_code: AGE_BASED_REVIEW_REQUIRED
+    condition: insured_profile.age_at_service < 15 or insured_profile.age_at_service >= 80
+  - id: HR_REPEATED_SAME_DIAGNOSIS
+    reason_code: REPEATED_SAME_DIAGNOSIS
+    condition: claim_history.same_diagnosis_claims_90d >= 3
+  - id: HR_FREQUENT_MANUAL_THERAPY
+    reason_code: FREQUENT_MANUAL_THERAPY
+    condition: claim_history.manual_therapy_count_180d >= 20
+  - id: HR_LATE_FIRST_TREATMENT
+    reason_code: LATE_FIRST_TREATMENT
+    condition: days_between(claim.incident_date, claim.treatment_start_date) > 30
+  - id: HR_DOCUMENT_CLAIM_MISMATCH
+    reason_code: DOCUMENT_CLAIM_MISMATCH
+    condition: signals.document_claim_mismatch is true
+  - id: HR_LOW_CONFIDENCE_COVERAGE_MATCH
+    reason_code: LOW_CONFIDENCE_COVERAGE_MATCH
+    condition: coverage_resolver.confidence < 0.75
+  - id: HR_TOOL_FAILURE
+    reason_code: TOOL_FAILURE
+    condition: required tool invocation failed

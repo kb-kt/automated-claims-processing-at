@@ -1,0 +1,26 @@
+app:
+  name: insurance-claims-review-mvp
+  environment: local
+  debug: true
+  version: 0.1.0
+
+paths:
+  template_root: ../ai_agent_template
+  policy_documents: ../data_generator/generated/policy_documents.md
+  products_json: ../data_generator/generated/products.json
+  claims_dev: ../data_generator/generated/claims_dev.jsonl
+  labels_dev: ../data_generator/generated/labels_dev.jsonl
+  claims_eval: ../data_generator/generated/claims_eval.jsonl
+  labels_eval: ../data_generator/generated/labels_eval.jsonl
+  sqlite_path: runtime/mvp.sqlite3
+  reports_dir: runtime/reports
+
+workflow:
+  fail_closed: true
+  low_confidence_threshold: 0.75
+
+retrieval:
+  enabled: true
+  mode: keyword
+  top_k: 3
+
