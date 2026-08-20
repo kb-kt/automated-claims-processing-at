@@ -115,6 +115,48 @@
     }
     .tile span { color: var(--muted); }
     .tile strong { font-size: 19px; }
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .agent-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+    .agent-card .agent-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .agent-card h3 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+    .agent-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .agent-findings {
+      display: grid;
+      gap: 8px;
+    }
+    .agent-finding {
+      border-top: 1px solid #edf1f6;
+      padding-top: 8px;
+      display: grid;
+      gap: 4px;
+    }
     .badge {
       display: inline-flex;
       align-items: center;
@@ -130,6 +172,10 @@
     .request_documents { background: #fff4df; color: var(--amber); }
     .deny { background: #ffe8e5; color: var(--red); }
     .human_review { background: #e9efff; color: var(--blue); }
+    .success { background: #e8f7ef; color: var(--green); }
+    .failed, .critical, .high { background: #ffe8e5; color: var(--red); }
+    .skipped, .medium { background: #fff4df; color: var(--amber); }
+    .low { background: #e8f7ef; color: var(--green); }
     pre {
       margin: 0;
       padding: 10px;
@@ -248,6 +294,12 @@
       </div>
     </section>
     <section class="wide">
+      <div class="head"><h2>Agent Reports</h2><span class="badge" id="agentReportCount">0 reports</span></div>
+      <div class="body">
+        <div id="specialistReports" class="agent-grid"></div>
+      </div>
+    </section>
+    <section class="wide">
       <div class="head"><h2>Evaluation, Standards & Config</h2><span class="badge">Stage 3</span></div>
       <div class="body">
         <div class="ops">
@@ -285,8 +337,20 @@
 
     async function requestJson(url, options = {}) {
       const response = await fetch(url, options);
-      const body = await response.json();
-      if (!response.ok) throw new Error(JSON.stringify(body.detail || body));
+      return parseJsonResponse(response);
+    }
+
+    async function parseJsonResponse(response) {
+      const text = await response.text();
+      let body = null;
+      try { body = text ? JSON.parse(text) : {}; } catch (_) { body = null; }
+      if (!response.ok) {
+        const error = body?.error || body?.detail?.error;
+        const message = error?.message || (typeof body?.detail === "string" ? body.detail : "") || text || `HTTP ${response.status}`;
+        const requestId = error?.request_id || response.headers.get("X-Request-ID");
+        throw new Error(`${error?.code ? `${error.code}: ` : ""}${message}${requestId ? ` [${requestId}]` : ""}`);
+      }
+      if (body === null) throw new Error(`INVALID_JSON_RESPONSE: HTTP ${response.status}`);
       return body;
     }
 
@@ -360,6 +424,121 @@
         `;
         basis.appendChild(div);
       });
+      renderSpecialistReports(review.specialist_reports || []);
+      loadPersistedSpecialistReports(review.claim_id || claim?.claim_id);
+    }
+
+    async function loadPersistedSpecialistReports(claimId) {
+      if (!claimId) return;
+      try {
+        const data = await requestJson(`/reviews/${encodeURIComponent(claimId)}/specialist-reports`);
+        if (data.reports && data.reports.length) renderSpecialistReports(data.reports);
+      } catch (error) {
+        // Keep the workflow output reports already rendered.
+      }
+    }
+
+    function renderSpecialistReports(reports) {
+      const container = $("specialistReports");
+      container.innerHTML = "";
+      $("agentReportCount").textContent = `${reports.length} reports`;
+      if (!reports.length) {
+        const empty = document.createElement("div");
+        empty.className = "tile";
+        empty.innerHTML = `
+          <span>No specialist reports</span>
+          <div>Policy, coverage, medical, fraud, and document agents will appear here when the workflow returns specialist_reports.</div>
+        `;
+        container.appendChild(empty);
+        return;
+      }
+      reports.forEach((report) => {
+        const card = document.createElement("article");
+        card.className = "agent-card";
+        const status = report.status || "skipped";
+        const riskLevel = report.risk_level || "-";
+        card.innerHTML = `
+          <div class="agent-title">
+            <h3>${escapeHtml(formatAgentName(report.agent_name || "agent"))}</h3>
+            <span class="badge ${escapeHtml(status)}">${escapeHtml(status)}</span>
+          </div>
+          <div class="agent-meta">
+            <span>version ${escapeHtml(report.agent_version || "-")}</span>
+            <span>risk ${escapeHtml(riskLevel)}</span>
+            <span>human review ${report.requires_human_review === true ? "required" : "not required"}</span>
+          </div>
+          <div>${escapeHtml(report.summary || "-")}</div>
+          <div><strong>Reason Codes</strong><ul>${renderListItems(report.reason_codes)}</ul></div>
+          <div><strong>Citations</strong><ul>${renderCitationItems(report.citations)}</ul></div>
+          <div><strong>Warnings</strong><ul>${renderListItems(report.warnings)}</ul></div>
+          <div class="agent-findings">${renderFindingItems(report.findings)}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function formatAgentName(name) {
+      return String(name).replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function renderListItems(values) {
+      const items = values && values.length ? values : ["-"];
+      return items.map((value) => `<li>${escapeHtml(String(value))}</li>`).join("");
+    }
+
+    function renderCitationItems(values) {
+      const items = values && values.length ? values : ["-"];
+      return items.map((value) => {
+        if (typeof value === "string") return `<li>${escapeHtml(value)}</li>`;
+        const label = value.citation_id || value.clause_id || value.section || value.source || "citation";
+        const score = value.retrieval_score == null ? "" : ` / score ${value.retrieval_score}`;
+        return `<li>${escapeHtml(label)}${escapeHtml(score)}</li>`;
+      }).join("");
+    }
+
+    function renderFindingItems(values) {
+      if (!values || !values.length) return "";
+      return values.map((finding) => {
+        if (finding.finding_type === "document_extraction") {
+          return renderDocumentExtractionFinding(finding);
+        }
+        const title = finding.title || finding.finding_type || finding.type || "Finding";
+        const detail = finding.summary || finding.detail || finding.description || JSON.stringify(finding);
+        return `
+          <div class="agent-finding">
+            <strong>${escapeHtml(title)}</strong>
+            <div>${escapeHtml(detail)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDocumentExtractionFinding(finding) {
+      const fieldStatuses = finding.field_statuses || {};
+      const fields = Object.entries(fieldStatuses);
+      const statusList = fields.length
+        ? fields.map(([field, status]) => `<li>${escapeHtml(field)}: ${escapeHtml(status)}</li>`).join("")
+        : "<li>-</li>";
+      return `
+        <div class="agent-finding">
+          <strong>Document Extraction</strong>
+          <div>${escapeHtml(finding.document_type || "-")} / ${escapeHtml(finding.document_id || "-")}</div>
+          <div>${escapeHtml(finding.summary || "-")}</div>
+          <details>
+            <summary>Field statuses</summary>
+            <ul>${statusList}</ul>
+          </details>
+        </div>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function resetReviewPanels(state = "Not Run") {
@@ -386,6 +565,7 @@
       $("reviewSummary").textContent = "-";
       list("reviewerNotes", []);
       $("policyBasis").innerHTML = '<div class="tile"><span>No review result</span><div>Run Review to load policy basis.</div></div>';
+      renderSpecialistReports([]);
       $("reviewerNote").value = "";
       setMessage("actionMessage", "");
     }

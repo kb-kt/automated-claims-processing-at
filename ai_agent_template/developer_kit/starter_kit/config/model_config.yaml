@@ -5,10 +5,22 @@ providers:
     model_id: mock-reviewer
     deterministic: true
   general_llm:
-    provider_type: hosted_llm
+    provider_type: openai_compatible
     base_url: https://m2.geniemars.kt.co.kr:10601/v1
     api_key: dummy
     model_id: gemma-4-26B-4aB-it
+    role: orchestrator_reasoning
     temperature: 0
     response_format: json_schema
-
+    timeout_ms: 30000
+  document_vlm:
+    provider_type: openai_compatible
+    base_url: ${DOCUMENT_VLM_BASE_URL}
+    api_key: ${DOCUMENT_VLM_API_KEY}
+    model_id: ${DOCUMENT_VLM_MODEL_ID}
+    role: document_understanding
+    temperature: 0
+    response_format: json_schema
+    timeout_ms: 60000
+    enabled: ${DOCUMENT_VLM_ENABLED}
+    requires_conformance_test: true

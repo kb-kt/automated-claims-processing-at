@@ -4,6 +4,7 @@ providers:
     provider_type: mock
     model_id: mock-review-assistant
   general_llm:
+    role: orchestrator_reasoning
     provider_type: openai_compatible
     base_url: https://m2.geniemars.kt.co.kr:10601/v1
     api_key: dummy
@@ -11,3 +12,14 @@ providers:
     temperature: 0
     response_format: json_schema
     timeout_ms: 30000
+  document_vlm:
+    role: document_understanding
+    provider_type: openai_compatible
+    base_url: ${DOCUMENT_VLM_BASE_URL}
+    api_key: ${DOCUMENT_VLM_API_KEY}
+    model_id: ${DOCUMENT_VLM_MODEL_ID}
+    temperature: 0
+    response_format: json_schema
+    timeout_ms: 60000
+    enabled: ${DOCUMENT_VLM_ENABLED}
+    requires_conformance_test: true

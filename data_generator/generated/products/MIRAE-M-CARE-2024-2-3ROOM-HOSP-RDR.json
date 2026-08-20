@@ -1,0 +1,99 @@
+{
+  "product_id": "MIRAE-M-CARE-2024-2-3ROOM-HOSP-RDR",
+  "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_2-3인실입원특약(상급종합병원)(1일이상 30일한도) [기본형]",
+  "product_type": "real_insurance_product",
+  "version": "기본형",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "상급종합병원 2-3인실 입원 보장, 1일 이상 30일 한도, 비갱신형, 종신 가능 건강보험 입원 특약",
+  "coverages": [
+    {
+      "coverage_code": "COV_INPATIENT_ROOM_ALLOWANCE",
+      "name": "상급종합병원 2-3인실 입원비",
+      "care_setting": "inpatient",
+      "benefit_category": "covered",
+      "annual_count_limit": 30,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0
+      },
+      "required_documents": [
+        "claim_form",
+        "hospitalization_certificate",
+        "medical_receipt"
+      ],
+      "source_fields": {
+        "product_name": "2-3인실입원특약(상급종합병원)(1일이상 30일한도) [기본형]",
+        "payment_conditions3": "입원",
+        "payment_conditions4": "상급종합병원",
+        "payment_conditions7": "2-3인실, 연간 30일 한도"
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "계약자, 피보험자, 수익자의 고의"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_UNKNOWN_LIMIT",
+      "condition": "보험금 한도 미기재로 제한 판단 불가"
+    },
+    {
+      "code": "HR_AMBIGUOUS_PAYMENT_CONDITIONS",
+      "condition": "일부 지급 조건 정보 부족으로 상세 검토 필요"
+    },
+    {
+      "code": "HR_AGE_ELIGIBILITY_CHECK",
+      "condition": "만 15세 이상 75세 이하인지 확인 필요"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_05.건강/보험_05_미래에셋 M-케어 건강보험 무배당 [기본형]_2-3인실입원특약(상급종합병원)(1일이상 30일한도) [기본형].json"
+  },
+  "extraction_warnings": [
+    "insured_amount 정보 없음으로 보장 한도 미확인",
+    "effective_date 정보 없음으로 기본 2000-01-01 적용",
+    "deductible 명시 없음으로 0.0% 비율 적용",
+    "required_documents 구체 미기재로 기본 문서 적용",
+    "연간 지급 한도 금액 미기재 - 연간 30일 입원일수만 제공됨",
+    "기타 일부 지급 조건 및 보장 내용 불명확"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "미래에셋 M-케어 건강보험 무배당 [기본형]_2-3인실입원특약(상급종합병원)(1일이상 30일한도) [기본형]",
+      "confidence": "high"
+    },
+    {
+      "field": "products.version",
+      "source_field": "product_name",
+      "source_value": "2-3인실입원특약(상급종합병원)(1일이상 30일한도) [기본형]",
+      "confidence": "medium"
+    },
+    {
+      "field": "products.coverages[0].annual_count_limit",
+      "source_field": "payment_conditions7",
+      "source_value": "2-3인실, 연간 30일 한도",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0].name",
+      "source_field": "exclusion_items",
+      "source_value": "계약자, 피보험자, 수익자의 고의",
+      "confidence": "high"
+    }
+  ]
+}

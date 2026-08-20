@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/insurer_medical_routing_rules.schema.json",
+  "title": "Insurer Medical Routing Rules",
+  "version": "1.0.0",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "rule_id",
+      "rule_version",
+      "rule_name",
+      "description",
+      "routing",
+      "reason_code",
+      "default_confidence",
+      "approval_status",
+      "owner",
+      "effective_from"
+    ],
+    "properties": {
+      "rule_id": { "type": "string", "minLength": 1 },
+      "rule_version": { "type": "string", "minLength": 1 },
+      "rule_name": { "type": "string", "minLength": 1 },
+      "description": { "type": "string", "minLength": 1 },
+      "routing": {
+        "type": "string",
+        "enum": ["continue_claim_review", "request_documents", "human_review"]
+      },
+      "reason_code": { "type": "string", "minLength": 1 },
+      "default_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+      "approval_status": {
+        "type": "string",
+        "enum": ["synthetic_insurer_approved", "insurer_approved", "draft", "deprecated"]
+      },
+      "owner": { "type": "string", "minLength": 1 },
+      "effective_from": { "type": "string", "format": "date" },
+      "effective_to": { "type": ["string", "null"], "format": "date" },
+      "conditions": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "evidence_requirements": {
+        "type": "array",
+        "items": { "type": "string" },
+        "uniqueItems": true
+      },
+      "source_reference": { "type": "string" },
+      "synthetic": { "type": "boolean" }
+    }
+  }
+}

@@ -20,6 +20,35 @@
       "fraud_reason_codes": {
         "type": "array",
         "items": { "type": "string" }
+      },
+      "risk_score": { "type": "number", "minimum": 0, "maximum": 100 },
+      "routing": {
+        "type": "string",
+        "enum": ["human_review", "continue_claim_review"]
+      },
+      "requires_human_review": { "type": "boolean" },
+      "engine_version": { "type": "string", "minLength": 1 },
+      "workflow_version": { "type": "string", "minLength": 1 },
+      "request_id": { "type": "string", "minLength": 1 },
+      "document_findings": {
+        "type": "array",
+        "items": { "type": "object" }
+      },
+      "history_findings": {
+        "type": "array",
+        "items": { "type": "object" }
+      },
+      "evidence": {
+        "type": "array",
+        "items": { "type": "object" }
+      },
+      "analysis_warnings": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "tool_failures": {
+        "type": "array",
+        "items": { "type": "object" }
       }
     }
   },

@@ -1,0 +1,68 @@
+{
+  "tool_name": "policy_coverage_analyzer",
+  "version": "1.0.0",
+  "description": "Analyze policy clauses, riders, exclusions, deductibles, and coverage basis using RAG-ready citations and normalized medical codes.",
+  "input_schema": {
+    "type": "object",
+    "required": ["product_id", "claim"],
+    "additionalProperties": false,
+    "properties": {
+      "product_id": { "type": "string" },
+      "claim": { "type": "object" },
+      "normalized_kcd_code": { "type": "string" },
+      "normalized_edi_code": { "type": "string" },
+      "accident_type": { "type": "string" },
+      "policy_search_result": { "type": "object" },
+      "coverage_resolver_result": { "type": "object" },
+      "retrieval_options": {
+        "type": "object",
+        "properties": {
+          "retrieval_mode": { "type": "string", "enum": ["keyword", "vector", "hybrid", "structured"] },
+          "top_k": { "type": "integer", "minimum": 1, "maximum": 50 },
+          "require_citation_verification": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["report", "coverage_code", "coverage_name", "policy_findings", "citation_verification_status"],
+    "additionalProperties": false,
+    "properties": {
+      "report": { "$ref": "../../schemas/agent_report.schema.json" },
+      "coverage_code": { "type": "string" },
+      "coverage_name": { "type": "string" },
+      "policy_findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["finding_type", "clause_id", "summary"],
+          "properties": {
+            "finding_type": {
+              "type": "string",
+              "enum": ["coverage", "rider", "exclusion", "deductible", "limit", "unclear"]
+            },
+            "clause_id": { "type": "string" },
+            "source_document_id": { "type": "string" },
+            "page": { "type": "integer", "minimum": 0 },
+            "summary": { "type": "string" },
+            "retrieval_score": { "type": "number", "minimum": 0, "maximum": 1 },
+            "rerank_score": { "type": "number", "minimum": 0, "maximum": 1 },
+            "citation_verification_status": {
+              "type": "string",
+              "enum": ["verified", "failed", "not_checked"]
+            }
+          }
+        }
+      },
+      "citation_verification_status": {
+        "type": "string",
+        "enum": ["verified", "partial", "failed", "not_checked"]
+      },
+      "requires_human_review": { "type": "boolean" }
+    }
+  },
+  "timeout_ms": 10000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

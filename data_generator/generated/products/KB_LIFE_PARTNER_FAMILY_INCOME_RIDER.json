@@ -1,0 +1,148 @@
+{
+  "product_id": "KB_LIFE_PARTNER_FAMILY_INCOME_RIDER",
+  "product_name": "KB 라이프 파트너 종신보험 무배당(해약환급금 일부지급형)_무배당 가족수입특약",
+  "product_type": "real_insurance_product",
+  "version": "unknown",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "KB생명에서 제공하는 정기형 무배당 가족수입특약으로, 사망 시 보험금 지급을 보장하며 해약환급금이 일부 지급되는 비갱신형 특약입니다.",
+  "coverages": [
+    {
+      "coverage_code": "COV_FAMILY_INCOME_DEATH",
+      "name": "가족수입특약 사망보장",
+      "care_setting": "death",
+      "benefit_category": "death",
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0
+      },
+      "required_documents": [
+        "claim_form",
+        "death_certificate",
+        "insurance_policy"
+      ],
+      "source_fields": {
+        "company": "KB생명",
+        "mother_product_name": "KB 라이프 파트너 종신보험 무배당(해약환급금 일부지급형)",
+        "product_name": "무배당 가족수입특약",
+        "product_type": "정기",
+        "rider_type": "사망",
+        "renewable_type": "비갱신형",
+        "refund_type": "해약환급금 일부 있음",
+        "payment_type": "월납",
+        "exclusion_items": "계약 전 알릴 의무 위반, 피보험자/보험수익자의 고의, 사기 보험 계약 체결, 보험계약자 및 피보험자의 자필서명 미기입",
+        "payment_conditions1": "질병,재해",
+        "payment_conditions2": "사망",
+        "eligible_age": "만 20세 ~ 55세",
+        "insured_amount": "월 10만원~500만원"
+      },
+      "limit_per_claim": 100000
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_MISSTATEMENT",
+      "name": "계약 전 알릴 의무 위반"
+    },
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "피보험자 또는 보험수익자의 고의 행위"
+    },
+    {
+      "code": "EXC_INSURANCE_FRAUD",
+      "name": "사기성 보험 계약 체결"
+    },
+    {
+      "code": "EXC_SIGNATURE_MISSING",
+      "name": "보험계약자 및 피보험자의 자필서명 미기입"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_AGE_ELIGIBILITY_CHECK",
+      "condition": "insured age is not within 만 20세 ~ 55세"
+    },
+    {
+      "code": "HR_INSUFFICIENT_DOCUMENTS",
+      "condition": "required documents for death claim are incomplete"
+    },
+    {
+      "code": "HR_FRAUD_INDICATORS",
+      "condition": "indicators of fraud or misstatement detected in claim submission"
+    },
+    {
+      "code": "HR_AMBIGUOUS_INSURED_AMOUNT",
+      "condition": "insured amount range is broad (월 10만원~500만원), requiring review"
+    },
+    {
+      "code": "HR_UNSPECIFIED_EFFECTIVE_DATE",
+      "condition": "effective date is unknown, policy start date verification required"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_03.정기/보험_03_KB 라이프 파트너 종신보험 무배당(해약환급금 일부지급형)_무배당 가족수입특약.json"
+  },
+  "extraction_warnings": [
+    "coverages[0].limit_per_claim inferred from source amount text as 100000",
+    "version field is missing, defaulted to 'unknown'",
+    "effective_date is unknown, defaulted to '2000-01-01'",
+    "insured_amount given as range '월 10만원~500만원' without precise limit extraction",
+    "no explicit deductible or copay information, assumed zero rate deductible",
+    "payment_period not specified",
+    "annual or claim limits not specified, omitted numeric fields",
+    "required_documents fallback set as death benefit typical documents"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "KB 라이프 파트너 종신보험 무배당(해약환급금 일부지급형)_무배당 가족수입특약",
+      "confidence": "high"
+    },
+    {
+      "field": "products.product_type",
+      "source_field": "product_type",
+      "source_value": "정기",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].benefit_category",
+      "source_field": "rider_type",
+      "source_value": "사망",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions",
+      "source_field": "exclusion_items",
+      "source_value": "계약 전 알릴 의무 위반, 피보험자/보험수익자의 고의, 사기 보험 계약 체결, 보험계약자 및 피보험자의 자필서명 미기입",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].required_documents",
+      "source_field": "payment_conditions2",
+      "source_value": "사망",
+      "confidence": "medium"
+    },
+    {
+      "field": "products.coverages[0].deductible",
+      "source_field": "정보 없음",
+      "source_value": "deductible info",
+      "confidence": "low"
+    },
+    {
+      "field": "products.coverages[0].limit_per_claim",
+      "source_field": "insured_amount",
+      "source_value": "월 10만원~500만원",
+      "confidence": "medium"
+    }
+  ]
+}

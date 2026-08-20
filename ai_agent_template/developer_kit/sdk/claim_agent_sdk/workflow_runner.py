@@ -8,8 +8,13 @@ from .explanation_confidence import evaluate_explanation_confidence
 from .model_provider import MockModelProvider, ModelProvider
 from .schema_validator import SchemaValidator
 from .standards_registry import StandardsRegistry
+from .specialist_agents import SpecialistAgent, default_specialist_agents
 from .template_loader import TemplateBundle
 from .tool_registry import ToolCallResult, ToolRegistry
+from .agent_report import build_agent_report
+from .document_extraction import DocumentExtractor
+from .label_leakage import assert_no_label_leakage
+from .safety_policy import apply_fail_closed_human_review
 
 
 class WorkflowRunner:
@@ -28,21 +33,56 @@ class WorkflowRunner:
         model_provider: ModelProvider | None = None,
         policy_retriever: Any | None = None,
         policy_retrieval_options: dict[str, Any] | None = None,
+        specialist_agents: list[SpecialistAgent] | None = None,
+        document_extractor: DocumentExtractor | None = None,
     ):
         self.template = template
         self.tool_registry = tool_registry
         self.model_provider = model_provider or MockModelProvider()
         self.policy_retriever = policy_retriever
         self.policy_retrieval_options = policy_retrieval_options or {}
+        self.document_extractor = document_extractor
+        self.specialist_agents = (
+            specialist_agents
+            if specialist_agents is not None
+            else default_specialist_agents(self.model_provider)
+        )
         self.validator = SchemaValidator(template)
         self.standards = StandardsRegistry(template)
+        self.last_context: dict[str, Any] = {}
 
     def run(self, claim_payload: dict[str, Any]) -> dict[str, Any]:
+        assert_no_label_leakage(
+            claim_payload,
+            context="claim review input",
+            forbid_agent_output_fields=True,
+        )
         self.validator.validate_claim_input(claim_payload)
         context: dict[str, Any] = {"claim_payload": claim_payload, "tool_trace": []}
+        self._current_context = context
+        self.last_context = context
         if self.policy_retriever is not None:
             context["policy_retriever"] = self.policy_retriever
             context["policy_retrieval_options"] = self.policy_retrieval_options
+        if self.document_extractor is not None:
+            try:
+                context["document_extractions"] = self.document_extractor.extract_for_claim(claim_payload)
+            except Exception as exc:
+                context.setdefault("critical_failures", []).append(
+                    {"component": "document_extraction", "error_type": type(exc).__name__}
+                )
+                context["document_extractions"] = [
+                    {
+                        "document_id": "unknown",
+                        "document_type": "unknown",
+                        "extraction_mode": "vlm_required",
+                        "extraction_status": "failed",
+                        "extraction_confidence_bucket": "low",
+                        "extracted_fields": {},
+                        "field_statuses": {"document_extraction": "failed"},
+                        "error": str(exc),
+                    }
+                ]
 
         policy_result = self._run_tool(
             "policy_search",
@@ -60,7 +100,7 @@ class WorkflowRunner:
                 ["TOOL_FAILURE", "HUMAN_REVIEW_REQUIRED"],
                 _empty_calculation(claim_payload),
                 [],
-                True,
+                False,
                 "Policy search failed; reviewer confirmation is required.",
             )
 
@@ -132,6 +172,21 @@ class WorkflowRunner:
                 _policy_basis(policy_result),
                 True,
                 "Fraud or duplicate receipt signals were detected; human review is required.",
+            )
+        if fraud.get("routing") == "human_review" or fraud.get("requires_human_review"):
+            reason_codes = _unique(
+                fraud.get("fraud_reason_codes", [])
+                + ["HUMAN_REVIEW_REQUIRED"]
+            )
+            return self._human_review_output(
+                claim_payload,
+                coverage_code,
+                coverage_name,
+                reason_codes,
+                _empty_calculation(claim_payload),
+                _policy_basis(policy_result),
+                False,
+                "Fraud_Check routing requires human review before the claim can proceed.",
             )
 
         policy_reason = _policy_invalid_reason(claim_payload)
@@ -411,6 +466,12 @@ class WorkflowRunner:
             "reviewer_notes": reviewer_notes,
         }
         self._apply_model_narrative(output, claim_payload)
+        self._attach_specialist_reports(output, claim_payload, getattr(self, "_current_context", {}))
+        if getattr(self, "_current_context", {}).get("critical_failures"):
+            apply_fail_closed_human_review(
+                output,
+                reviewer_note="A decision-critical evidence dependency failed; reviewer confirmation is required.",
+            )
         decision_validation = self.tool_registry.run(
             "decision_validator",
             {"agent_output": output},
@@ -425,6 +486,64 @@ class WorkflowRunner:
         output["explanation_confidence"] = evaluate_explanation_confidence(output)
         self.validator.validate_agent_output(output)
         return output
+
+    def _attach_specialist_reports(
+        self,
+        output: dict[str, Any],
+        claim_payload: dict[str, Any],
+        context: dict[str, Any],
+    ) -> None:
+        reports: list[dict[str, Any]] = []
+        force_human_review = False
+        for agent in self.specialist_agents:
+            try:
+                report = agent.run(
+                    {"claim_payload": claim_payload, "agent_output": output},
+                    self._specialist_context(context),
+                )
+                self.validator.validate_agent_report(report)
+            except Exception as exc:
+                report = build_agent_report(
+                    agent_name=getattr(agent, "name", "specialist_agent"),
+                    agent_version=getattr(agent, "version", "1.0.0"),
+                    status="failed",
+                    summary="Specialist agent failed; reviewer confirmation is required.",
+                    reason_codes=["SPECIALIST_AGENT_FAILURE"],
+                    risk_level="high",
+                    requires_human_review=True,
+                    confidence_factors={
+                        "evidence_clarity": 0.0,
+                        "judgment_difficulty": 1.0,
+                        "uncertainty": 1.0,
+                    },
+                    warnings=[str(exc)],
+                )
+            reports.append(report)
+            force_human_review = force_human_review or bool(report.get("requires_human_review"))
+
+        if reports:
+            output["specialist_reports"] = reports
+        if force_human_review and not output.get("requires_human_review"):
+            output["recommended_decision"] = "human_review"
+            output["requires_human_review"] = True
+            output["reason_codes"] = _unique(
+                output.get("reason_codes", [])
+                + ["SPECIALIST_AGENT_HUMAN_REVIEW", "HUMAN_REVIEW_REQUIRED"]
+            )
+            output["reviewer_notes"] = _unique(
+                list(output.get("reviewer_notes", []))
+                + ["A specialist agent requires human review before final disposition."]
+            )
+
+    @staticmethod
+    def _specialist_context(context: dict[str, Any]) -> dict[str, Any]:
+        converted_trace: list[dict[str, Any]] = []
+        for item in context.get("tool_trace", []):
+            if hasattr(item, "result"):
+                converted_trace.append(item.result.to_dict())
+            elif isinstance(item, dict):
+                converted_trace.append(item)
+        return {**context, "tool_trace": converted_trace}
 
     def _apply_model_narrative(self, output: dict[str, Any], claim_payload: dict[str, Any]) -> None:
         narrative_schema = {
@@ -512,8 +631,24 @@ class WorkflowRunner:
                     "fallback_summary": output["review_summary"],
                 },
             )
-        except Exception:
+        except Exception as exc:
+            getattr(self, "_current_context", {}).update(
+                {
+                    "model_narrative": {
+                        "status": "failed",
+                        "criticality": "advisory",
+                        "error_type": type(exc).__name__,
+                    }
+                }
+            )
+            output["reviewer_notes"] = _unique(
+                list(output.get("reviewer_notes") or [])
+                + ["LLM narrative assistance was unavailable; this recommendation uses deterministic evidence only."]
+            )
             return
+        getattr(self, "_current_context", {}).update(
+            {"model_narrative": {"status": "success", "criticality": "advisory"}}
+        )
         summary = narrative.get("review_summary")
         notes = narrative.get("reviewer_notes")
         if isinstance(summary, str) and summary.strip():

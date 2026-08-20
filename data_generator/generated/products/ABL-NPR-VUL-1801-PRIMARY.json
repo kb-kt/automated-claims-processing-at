@@ -1,0 +1,144 @@
+{
+  "product_id": "ABL-NPR-VUL-1801-PRIMARY",
+  "product_name": "ABL 무배당 뉴파워리턴변액유니버셜보험 1801_주계약",
+  "product_type": "real_insurance_product",
+  "version": "1801",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "ABL생명의 변액유니버셜보험으로 종신 가능하며 저축형 구조. 해약환급금 지급 가능하며 월납으로 12년(144회) 의무납입 후 종신 유지 가능.",
+  "coverages": [
+    {
+      "coverage_code": "COV_VARIABLE_SAVINGS",
+      "name": "변액저축형 주계약",
+      "care_setting": "variable",
+      "benefit_category": "savings",
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0,
+        "fixed_amount": 0
+      },
+      "required_documents": [
+        "claim_form"
+      ],
+      "source_fields": {
+        "company": "ABL생명",
+        "mother_product_name": "ABL 무배당 뉴파워리턴변액유니버셜보험 1801",
+        "product_name": "주계약",
+        "product_type": "변액",
+        "rider_type": "저축",
+        "product_period": "종신가능",
+        "refund_type": "해약환급금 있음",
+        "refund_condition": "보험료 계산 시 적용한 위험률로 산출한 순보험료식 계약자적립액에서 해약공제액을 공제한 금액을 해약환급금으로 지급",
+        "payment_type": "월납",
+        "payment_period": "종신 (의무납입기간 12년,144회 납입)",
+        "minimum_insured _premium": "월 20만원",
+        "minimum_guarantee": "최저사망보험금 보증 (이미 납입한 보험료).",
+        "payment_flexibility": "납입유예  가능(최소 가입 기간 도과 등 조건 확인 필요)",
+        "additional_payment": "가능(기본보험료의 200% 이내)",
+        "early_withdrawal": "중도인출 가능\n(세부조건 참조)",
+        "product_switching": "연금 등 전환 가능",
+        "product_features": "장기유지 보너스"
+      },
+      "limit_per_claim": 200000
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_DISCLOSURE_VIOLATION",
+      "name": "고지의무 위반"
+    },
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "계약자/피보험자/수익자의 고의"
+    },
+    {
+      "code": "EXC_CONTRACT_FRAUD",
+      "name": "사기에 의한 계약"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_MISSING_AGE_START",
+      "condition": "insured age at contract start unknown or missing"
+    },
+    {
+      "code": "HR_VARIABLE_PRODUCT_PAYABLE_CALCULATION",
+      "condition": "payable amount depends on variable investment returns and risk factors"
+    },
+    {
+      "code": "HR_AMBIGUOUS_INSURED_AMOUNT",
+      "condition": "insured amount '계약 시 협의' not precisely defined"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_07.변액/보험_07_ABL 무배당 뉴파워리턴변액유니버셜보험 1801_주계약.json"
+  },
+  "extraction_warnings": [
+    "coverages[0].limit_per_claim inferred from source amount text as 200000",
+    "effective_date unknown, defaulted to 2000-01-01",
+    "insured_amount specified as '계약 시 협의', exact numeric limits not extracted",
+    "deductible details missing, defaulted to 0% rate",
+    "required_documents not specified, defaulted to ['claim_form']",
+    "payment_conditions fields missing or unavailable",
+    "starting age info missing"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_id",
+      "source_field": "product_full_name",
+      "source_value": "ABL 무배당 뉴파워리턴변액유니버셜보험 1801_주계약",
+      "confidence": "high"
+    },
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "ABL 무배당 뉴파워리턴변액유니버셜보험 1801_주계약",
+      "confidence": "high"
+    },
+    {
+      "field": "products.version",
+      "source_field": "product_full_name",
+      "source_value": "1801",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].benefit_category",
+      "source_field": "rider_type",
+      "source_value": "저축",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].care_setting",
+      "source_field": "product_type",
+      "source_value": "변액",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0].name",
+      "source_field": "exclusion_items",
+      "source_value": "고지의무 위반",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[1].name",
+      "source_field": "exclusion_items",
+      "source_value": "계약자/피보험자/수익자의 고의",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[2].name",
+      "source_field": "exclusion_items",
+      "source_value": "사기에 의한 계약",
+      "confidence": "high"
+    }
+  ]
+}

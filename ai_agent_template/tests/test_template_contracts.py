@@ -67,6 +67,25 @@ class TemplateContractsTest(unittest.TestCase):
                 self.assertRegex(contract["version"], r"^\d+\.\d+\.\d+$")
                 self.assertIn(contract["failure_policy"], {"human_review", "fail", "retry"})
 
+    def test_specialist_contracts_are_parseable_and_separate_from_core_workflow(self) -> None:
+        expected = {
+            "document_understanding",
+            "medical_code_mapper",
+            "medical_review_causality",
+            "policy_coverage_analyzer",
+        }
+        contracts_dir = BASE_DIR / "tools" / "specialist_contracts"
+        contract_names = {
+            _read_json(path)["tool_name"]
+            for path in contracts_dir.glob("*.contract.json")
+        }
+        self.assertEqual(contract_names, expected)
+        workflow_text = (BASE_DIR / "workflows" / "claim_review_workflow.yaml").read_text(
+            encoding="utf-8"
+        )
+        for name in expected:
+            self.assertNotRegex(workflow_text, rf"^\s+tool:\s+{name}\s*$")
+
     def test_examples_follow_core_contract_rules(self) -> None:
         input_example = _read_json(BASE_DIR / "examples" / "customer_claim_input.example.json")
         output_example = _read_json(BASE_DIR / "examples" / "reviewer_assistant_output.example.json")
@@ -104,9 +123,21 @@ class TemplateContractsTest(unittest.TestCase):
             "reviewer_actions",
             "evaluation_runs",
             "config_versions",
+            "medical_code_registry",
+            "procedure_code_registry",
+            "diagnosis_treatment_rules",
+            "specialist_agent_reports",
+            "document_extraction_results",
         ]:
             with self.subTest(table=table):
                 self.assertIn(f"CREATE TABLE IF NOT EXISTS {table}", sql)
+
+    def test_model_config_separates_orchestrator_and_document_vlm(self) -> None:
+        text = (BASE_DIR / "config" / "model_config.yaml").read_text(encoding="utf-8")
+        self.assertIn("role: orchestrator_reasoning", text)
+        self.assertIn("document_vlm:", text)
+        self.assertIn("role: document_understanding", text)
+        self.assertIn("requires_conformance_test: true", text)
 
     def test_workflow_prompt_references_exist(self) -> None:
         workflow_text = (BASE_DIR / "workflows" / "claim_review_workflow.yaml").read_text(
@@ -146,6 +177,10 @@ class TemplateContractsTest(unittest.TestCase):
     def test_operational_docs_exist(self) -> None:
         for relative in [
             "docs/API_SPEC_DRAFT.md",
+            "docs/API_SPEC.md",
+            "docs/COMPLETENESS_GATES.md",
+            "docs/DEVELOPMENT_ENVIRONMENT.md",
+            "docs/OPERATIONS_RUNBOOK.md",
             "docs/STANDARDIZATION.md",
             "docs/OPERATIONS_TEMPLATE.md",
             "api/endpoints.md",

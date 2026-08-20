@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/agent_report.schema.json",
+  "title": "Specialist Agent Report",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent_name",
+    "agent_version",
+    "status",
+    "summary",
+    "findings",
+    "reason_codes",
+    "citations",
+    "risk_level",
+    "requires_human_review",
+    "confidence_factors",
+    "warnings",
+    "tool_trace_refs"
+  ],
+  "properties": {
+    "agent_name": { "type": "string", "minLength": 1 },
+    "agent_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "status": { "type": "string", "enum": ["success", "failed", "skipped"] },
+    "summary": { "type": "string", "minLength": 1 },
+    "findings": { "type": "array", "items": { "type": "object" } },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+      "uniqueItems": true
+    },
+    "citations": { "type": "array", "items": { "type": "object" } },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+    "requires_human_review": { "type": "boolean" },
+    "confidence_factors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_clarity", "judgment_difficulty", "uncertainty"],
+      "properties": {
+        "evidence_clarity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "judgment_difficulty": { "type": "number", "minimum": 0, "maximum": 1 },
+        "uncertainty": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "tool_trace_refs": { "type": "array", "items": { "type": "string" } }
+  }
+}

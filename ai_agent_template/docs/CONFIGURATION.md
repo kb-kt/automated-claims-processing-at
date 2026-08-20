@@ -277,14 +277,20 @@ Starter Kit은 다음 환경변수를 지원한다.
 | `CLAIM_AGENT_RETRIEVAL_ENABLED` | policy retrieval 사용 여부 | `true` |
 | `CLAIM_AGENT_RETRIEVAL_MODE` | policy retrieval mode override | `keyword` |
 | `CLAIM_AGENT_RETRIEVAL_TOP_K` | policy retrieval top-k override | `3` |
+| `FRAUD_CHECK_URL` | remote Fraud_Check base URL | `http://127.0.0.1:8010` |
+| `FRAUD_CHECK_API_KEY` | optional Fraud_Check bearer token | none |
 
 예:
 
 ```powershell
 $env:CLAIM_AGENT_SQLITE_PATH="C:\tmp\claim-agent\starter.sqlite3"
-$env:CLAIM_AGENT_PLUGIN_CONFIG="C:\Users\PC\AA\Automated_Claims_Processing\mvp\config\plugins.yaml"
+$env:CLAIM_AGENT_PLUGIN_CONFIG="C:\Users\PC\AA\Automated_Claims_Processing\ai_agent_template\developer_kit\starter_kit\config\plugins.remote.yaml"
 $env:CLAIM_AGENT_MODEL_CONFIG="C:\Users\PC\AA\Automated_Claims_Processing\mvp\config\model_config.yaml"
+$env:FRAUD_CHECK_URL="http://127.0.0.1:8010"
+$env:FRAUD_CHECK_API_KEY="optional-token"
 ```
+
+Fraud_Check가 완료되기 전 기본 local/demo 실행은 `plugins.yaml`의 synthetic fraud checker를 사용한다. 원격 Fraud_Check fail-closed 경로를 검증할 때만 `plugins.remote.yaml`을 `CLAIM_AGENT_PLUGIN_CONFIG` 또는 `CLAIM_MVP_PLUGIN_CONFIG`로 지정한다.
 
 우선순위:
 
@@ -367,6 +373,33 @@ retrieval:
 초기 구현은 vector DB를 사용하지 않는다. `KeywordPolicyRetriever`가 `policy_documents.md`와 `products.json`을 읽어 retrieval contract를 검증한다.
 
 향후 실제 RAG로 전환할 때는 config에 다음 항목을 추가할 수 있다.
+
+## Public API Authentication
+
+Local/demo authentication is disabled by default. Operational API-key RBAC is enabled only with environment variables; secrets are never stored in YAML.
+
+Starter Kit:
+
+```powershell
+$env:CLAIM_AGENT_AUTH_ENABLED = "true"
+$env:CLAIM_AGENT_CUSTOMER_API_KEY = "<runtime-secret>"
+$env:CLAIM_AGENT_REVIEWER_API_KEY = "<runtime-secret>"
+$env:CLAIM_AGENT_ADMIN_API_KEY = "<runtime-secret>"
+```
+
+MVP uses `CLAIM_MVP_AUTH_ENABLED`, `CLAIM_MVP_CUSTOMER_API_KEY`, `CLAIM_MVP_REVIEWER_API_KEY`, and `CLAIM_MVP_ADMIN_API_KEY`. Customer keys can submit claims and attach PDFs, reviewer keys can access claim/review work surfaces, and admin keys can run evaluations and demo administration. Internal Fraud APIs keep the separate `CLAIMS_INTERNAL_API_KEY` contract.
+
+## Customer Document Storage
+
+Customer-uploaded PDFs are separated from Data Generator output. Configure writable runtime storage with:
+
+```powershell
+$env:CLAIM_AGENT_DOCUMENT_STORAGE_DIR = "C:\runtime\claim-agent\documents"
+$env:CLAIM_MVP_DOCUMENT_STORAGE_DIR = "C:\runtime\claim-mvp\documents"
+$env:CLAIMS_INTERNAL_MAX_DOCUMENT_BYTES = "10000000"
+```
+
+Defaults are the respective Starter Kit or MVP `runtime/documents` directories. SQLite stores only metadata and a generated relative path; PDF bytes are never stored in the database. The generated synthetic document root remains read-only from the upload flow.
 
 ```yaml
 retrieval:

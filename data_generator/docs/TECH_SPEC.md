@@ -643,3 +643,329 @@ Hidden adjudication rules use the same privacy-minimized fields:
 - age review: `age_at_service < 15` or `age_at_service >= 80`
 
 Fraud and age rules must produce `human_review`; they must not produce automatic final payment or denial decisions.
+
+## 14. Fraud_Check Data Generation Extension
+
+### 14.1 Architecture
+
+```mermaid
+flowchart TD
+    Config["generation_config.sample.json"] --> ClaimGenerator["ClaimGenerator"]
+    Product["products.json"] --> ClaimGenerator
+    ClaimGenerator --> BaseClaims["Base claims"]
+    BaseClaims --> FraudBuilder["fraud_artifacts.build_fraud_artifacts"]
+    FraudBuilder --> CurrentClaims["claims_dev/eval.jsonl"]
+    FraudBuilder --> Historical["historical_claims.jsonl"]
+    FraudBuilder --> Documents["Synthetic PDF documents"]
+    Documents --> Metadata["document_metadata_dev/eval.jsonl"]
+    FraudBuilder --> Seeds["fraud_context_seed_dev/eval.jsonl"]
+    FraudBuilder --> FraudLabels["fraud_labels_dev/eval.jsonl"]
+    CurrentClaims --> Adjudication["adjudication_rules.adjudicate"]
+    Adjudication --> Labels["labels_dev/eval.jsonl"]
+    CurrentClaims --> Validator["validators.validate_fraud_artifacts"]
+    Historical --> Validator
+    Metadata --> Validator
+    FraudLabels --> Validator
+```
+
+### 14.2 Modules
+
+- `fraud_artifacts.py`: builds Fraud_Check-specific current claims, historical claims, synthetic insured/provider records, document metadata, claim-document links, DB seed rows, and fraud labels.
+- `pdf_documents.py`: writes deterministic minimal PDFs and computes content hash, normalized text fingerprint, perceptual-hash placeholder, MIME type, file size, page count, readability status, and render mode.
+- `validators.py`: validates runtime claim/label separation, recomputes claim-history aggregates from `historical_claims.jsonl`, checks PDF hash/readability, validates document-field alignment, and checks dev/eval leakage.
+- `cli.py`: writes the existing claim-review outputs and the new Fraud_Check outputs in one generation command.
+
+### 14.3 Output Structure
+
+```text
+data_generator/generated/
+  insureds.json
+  providers.json
+  historical_claims.jsonl
+  claims_dev.jsonl
+  claims_eval.jsonl
+  labels_dev.jsonl
+  labels_eval.jsonl
+  document_metadata_dev.jsonl
+  document_metadata_eval.jsonl
+  claim_document_links_dev.jsonl
+  claim_document_links_eval.jsonl
+  fraud_labels_dev.jsonl
+  fraud_labels_eval.jsonl
+  fraud_context_seed_dev.jsonl
+  fraud_context_seed_eval.jsonl
+  documents/
+    dev/{claim_id}/*.pdf
+    eval/{claim_id}/*.pdf
+  generation_report.json
+```
+
+### 14.4 Runtime vs Evaluation Boundary
+
+Runtime-safe files:
+
+- `claims_dev.jsonl`
+- `claims_eval.jsonl`
+- `historical_claims.jsonl`
+- `document_metadata_dev.jsonl`
+- `document_metadata_eval.jsonl`
+- `fraud_context_seed_dev.jsonl`
+- `fraud_context_seed_eval.jsonl`
+
+Evaluation-only files:
+
+- `labels_dev.jsonl`
+- `labels_eval.jsonl`
+- `fraud_labels_dev.jsonl`
+- `fraud_labels_eval.jsonl`
+
+`fraud_labels_*` must not be passed into Fraud_Check runtime or the claim-review workflow. Runtime claim rows use a neutral `scenario_type` for Fraud_Check cases so exact fraud scenario names remain isolated in `fraud_labels_*`.
+
+### 14.5 History Aggregation
+
+`recalculate_claim_history(current_claim, historical_claims)` is the canonical aggregation function for:
+
+- prior receipt IDs and hashes
+- same insured/provider 30-day count
+- provider-level 30-day count
+- same diagnosis 90-day count
+- manual therapy 180-day count
+
+Rules:
+
+- A historical claim is included only when its treatment start date is before the current claim treatment start date.
+- Exactly 30 days before the current claim is included in 30-day counters.
+- Future-dated historical rows are excluded.
+- `claim_history` in current claims must equal the recomputed result from individual historical rows.
+
+### 14.6 PDF Generation
+
+Readable PDFs are deterministic minimal PDFs generated with the Python standard library. Each readable PDF includes:
+
+- `SYNTHETIC TEST DOCUMENT / 실제 사용 불가`
+- document ID
+- receipt ID
+- insured ID
+- provider ID and provider name
+- issue date
+- treatment start/end dates
+- diagnosis code
+- treatment code
+- claimed amount
+- document type
+
+Document-failure scenarios use metadata status values:
+
+- `missing`
+- `corrupted`
+- `low_ocr`
+- `password_protected`
+
+Corrupted/protected documents are intentionally unreadable and are validated separately from unexpected PDF failures.
+
+### 14.7 Configuration
+
+`generation_config.sample.json` supports:
+
+- `fraud_generation.enabled`
+- `fraud_generation.generate_pdfs`
+- `fraud_generation.scan_pdf_ratio`
+- `fraud_generation.corrupt_document_ratio`
+- `fraud_generation.base_date`
+- `fraud_generation.history_days`
+- `fraud_generation.provider_count`
+- `fraud_generation.insured_count`
+- `fraud_generation.scenario_ratios`
+
+Current implementation guarantees one instance per required fraud scenario per split. The ratio values are reserved for scaling scenario oversampling while retaining the mandatory minimum.
+
+### 14.8 Validation and Tests
+
+Validation covers:
+
+- claim-review schema compatibility
+- runtime claim label leakage prevention
+- fraud label isolation
+- document file existence and hash match
+- expected unreadable document handling
+- structured PDF fields vs claim fields
+- fraud mutation alignment with fraud labels
+- prior receipt ID/hash recomputation
+- 30-day, 90-day, and 180-day aggregate recomputation
+- dev/eval insured, receipt, and document fingerprint separation
+
+Test entry point:
+
+```powershell
+python -m unittest discover -s data_generator\tests
+```
+
+## 15. Medical Code and Causality Generation
+
+### 15.1 Output Contract
+
+The Data Generator writes the following specialist-agent evaluation outputs under `data_generator/generated/`:
+
+```text
+medical_code_registry.json
+edi_code_registry.json
+diagnosis_treatment_rules.json
+insurer_medical_routing_rules.json
+medical_labels_dev.jsonl
+medical_labels_eval.jsonl
+code_mapping_labels_dev.jsonl
+code_mapping_labels_eval.jsonl
+policy_coverage_labels_dev.jsonl
+policy_coverage_labels_eval.jsonl
+medical_document_metadata_dev.jsonl
+medical_document_metadata_eval.jsonl
+medical_context_seed_dev.jsonl
+medical_context_seed_eval.jsonl
+```
+
+The runtime claim payload must not include answer labels. The generated runtime fields may include only evidence-like inputs such as raw diagnosis text, submitted diagnosis code, submitted treatment code, document references, prior-history aggregates, extraction status, and `medical_evidence`.
+
+`medical_evidence` is added to each generated claim as a runtime-safe object:
+
+```json
+{
+  "schema_version": "1.0.0",
+  "code_mapping_candidates": {
+    "kcd": [{"code": "M54.5", "confidence": 0.93, "source": "synthetic_code_mapper"}],
+    "edi": [{"code": "EDI-MM010", "confidence": 0.92, "source": "synthetic_code_mapper"}],
+    "ambiguous": false,
+    "ambiguity_reason": "single high-confidence synthetic mapping"
+  },
+  "prior_medical_evidence": {
+    "prior_diagnoses_180d": [],
+    "prior_surgeries_365d": [],
+    "prior_tests_180d": [],
+    "treatment_continuity_days": 0,
+    "pre_existing_condition_indicators": []
+  },
+  "insurer_medical_routing_rules": [
+    {
+      "rule_id": "SYN-MED-ROUTE-CONTINUE",
+      "rule_version": "synthetic-insurer-medical-routing-1.0.0",
+      "matched": true,
+      "routing": "continue_claim_review",
+      "reason_code": "DIAGNOSIS_TREATMENT_COMPATIBLE",
+      "confidence": 0.82
+    }
+  ],
+  "synthetic": true
+}
+```
+
+This object intentionally excludes `expected_*`, hidden scenario names, final claim-review labels, and fraud labels.
+
+`insurer_medical_routing_rules.json` contains the replaceable rule registry used to populate `medical_evidence.insurer_medical_routing_rules`. The bundled rows are synthetic "Synthetic Insurer A" rules with `approval_status=synthetic_insurer_approved`; production replacement must use insurer-approved rows with controlled versioning, owner, effective dates, and source governance.
+
+### 15.2 Registry Shape
+
+Future KCD registry rows should support:
+
+- `code_system`: `KCD`
+- `code`
+- `code_name`
+- `parent_code`
+- `chapter`
+- `category`
+- `valid_from`
+- `valid_to`
+- `version`
+- `aliases`
+
+Future EDI registry rows should support:
+
+- `code_system`: `EDI`
+- `code`
+- `code_name`
+- `procedure_group`
+- `benefit_category`
+- `valid_from`
+- `valid_to`
+- `version`
+- `aliases`
+
+Diagnosis-treatment rule rows should support:
+
+- `kcd_code`
+- `edi_code`
+- `relationship`: `compatible`, `weakly_related`, `not_related`, `unknown`
+- `medical_necessity_level`: `supported`, `partially_supported`, `unsupported`, `insufficient_evidence`
+- `required_documents`
+- `age_min`
+- `age_max`
+- `sex_constraint`
+- `review_policy`: `continue_claim_review`, `request_documents`, `human_review`
+- `reason_code`
+- `version`
+
+Insurer medical routing rule rows should support:
+
+- `rule_id`
+- `rule_version`
+- `rule_name`
+- `description`
+- `routing`: `continue_claim_review`, `request_documents`, `human_review`
+- `reason_code`
+- `default_confidence`
+- `approval_status`: `synthetic_insurer_approved`, `insurer_approved`, `draft`, or `deprecated`
+- `owner`
+- `effective_from`
+- `effective_to`
+- `synthetic`
+
+### 15.3 Scenario Generation
+
+Scenario generation should be deterministic by seed and must guarantee minimum coverage for:
+
+- KCD exact match and alias match
+- KCD ambiguous match
+- EDI exact match and alias match
+- EDI ambiguous match
+- compatible diagnosis-treatment pair
+- weakly related pair
+- unrelated pair
+- possible pre-existing condition
+- possible excessive treatment
+- sufficient medical evidence
+- insufficient medical evidence
+- document extraction failure
+
+### 15.4 Validation
+
+Future validators must check:
+
+- generated KCD/EDI codes exist in their registries
+- aliases map to deterministic candidate sets
+- diagnosis-treatment labels match the hidden rule table
+- medical-review labels are absent from runtime claim payloads
+- runtime `medical_evidence` exists, uses known KCD/EDI candidates, has bounded confidence values, and contains at least one routing rule
+- medical document metadata references existing synthetic files
+- VLM-required scenarios are marked as document-understanding scenarios, not as automatic claim decisions
+- dev/eval leakage is prevented for patient tokens, document lineage, and medical-label rows
+
+### 15.5 Compatibility Rule
+
+The Data Generator must remain independent. It may generate medical evidence and labels, but it must not import or execute MVP runtime logic. Compatibility with the AI Agent Template must be verified through integration tests after the Template schema is versioned.
+
+## 다중 상품 카탈로그 및 Policy 생성
+
+다중 상품 원본은 `data_generator/catalog/products`에 상품별 JSON과
+`product_catalog.json`으로 보존한다. 생성 시 이를
+`data_generator/generated/products`로 복사하고, 기존 plugin 호환을 위해 현재
+active product를 `generated/products.json`에도 기록한다.
+
+`policies.jsonl`은 상품마다 최소 2건 이상의 합성 Policy와 현재 생성 Claim이
+참조하는 Policy를 포함한다. Validator는 다음 불변식을 강제한다.
+
+- `product_id`와 `policy_id`는 각각 유일해야 한다.
+- Policy가 참조하는 Product가 카탈로그에 존재해야 한다.
+- Claim이 참조하는 Policy가 존재해야 한다.
+- Claim의 `product_id`와 해당 Policy의 `product_id`가 일치해야 한다.
+- 의료 Claim 자동 생성은 현재 의료 care setting/benefit category와 호환되는 Product에만 적용한다.
+
+레거시 한 열 CSV는 `import-products` 명령으로 한 번 정규화하고, 검증 완료 후
+CSV를 삭제한다. 이후 생성과 런타임은 CSV를 읽지 않는다.

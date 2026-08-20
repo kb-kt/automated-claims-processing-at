@@ -26,7 +26,9 @@ if router is not None:
         if not claim_id and not claim_payload:
             raise_http_error(ValidationFailed("claim_id or claim is required."))
         try:
-            return _service(request).run_review(claim_id=claim_id, claim_payload=claim_payload)
+            return _review_response(
+                _service(request).run_review(claim_id=claim_id, claim_payload=claim_payload)
+            )
         except MvpError as exc:
             raise_http_error(exc)
 
@@ -49,13 +51,16 @@ if router is not None:
         return {
             "claim_id": claim_id,
             "review_status": "found",
+            "status": "found",
             "output": review,
+            "agent_output": review,
+            "errors": [],
         }
 
     @router.post("/{claim_id}/rerun")
     def rerun_review(claim_id: str, request: Request) -> dict[str, Any]:
         try:
-            return _service(request).run_review(claim_id=claim_id)
+            return _review_response(_service(request).run_review(claim_id=claim_id))
         except MvpError as exc:
             raise_http_error(exc)
 
@@ -66,6 +71,9 @@ if router is not None:
         request: Request,
     ) -> dict[str, Any]:
         try:
+            principal = getattr(request.state, "auth_principal", None)
+            if principal is not None:
+                payload = {**payload, "reviewer_id": principal.subject}
             return _service(request).save_reviewer_action(claim_id, payload)
         except MvpError as exc:
             raise_http_error(exc)
@@ -74,6 +82,13 @@ if router is not None:
     def list_reviewer_actions(claim_id: str, request: Request) -> dict[str, Any]:
         try:
             return _service(request).list_reviewer_actions(claim_id)
+        except MvpError as exc:
+            raise_http_error(exc)
+
+    @router.get("/{claim_id}/specialist-reports")
+    def list_specialist_agent_reports(claim_id: str, request: Request) -> dict[str, Any]:
+        try:
+            return _service(request).list_specialist_agent_reports(claim_id)
         except MvpError as exc:
             raise_http_error(exc)
 
@@ -92,3 +107,16 @@ if router is not None:
 def _service(request: Request) -> ReviewService:
     container = request.app.state.container
     return ReviewService(repository=container.repository, runtime=container.runtime)
+
+
+def _review_response(result: dict[str, Any]) -> dict[str, Any]:
+    output = result.get("output", result)
+    status = "human_review_required" if output["requires_human_review"] else "completed"
+    return {
+        "claim_id": output["claim_id"],
+        "review_status": status,
+        "status": status,
+        "output": output,
+        "agent_output": output,
+        "errors": [],
+    }

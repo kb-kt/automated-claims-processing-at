@@ -1,13 +1,14 @@
 {
   "request_id": "REQ-EXAMPLE-0001",
   "claim_id": "CLM-EVAL-EXAMPLE-0001",
+  "review_status": "completed",
   "status": "completed",
-  "agent_output": {
+  "output": {
     "claim_id": "CLM-EVAL-EXAMPLE-0001",
     "recommended_decision": "partial_pay",
     "recommended_payable_amount": 140000,
     "coverage_code": "COV_OUTPATIENT_NONCOVERED",
-    "coverage_name": "비급여 통원 의료비",
+    "coverage_name": "Outpatient noncovered treatment",
     "missing_documents": [],
     "reason_codes": [
       "COVERED_INCIDENT",
@@ -17,6 +18,30 @@
     "requires_human_review": false,
     "fraud_suspected": false,
     "confidence": 0.94,
+    "confidence_assessment": {
+      "score_source": "deterministic_rules_with_llm_assistance",
+      "deterministic_confidence": 0.94,
+      "evidence_clarity": "high",
+      "judgment_difficulty": "medium",
+      "uncertainty_level": "low",
+      "uncertainty_explanation": "Coverage, document completeness, and payable calculation are aligned by deterministic tools; the main judgment point is the per-claim limit application.",
+      "assessment_basis": [
+        "Final confidence score is deterministic and is not replaced by LLM self-confidence.",
+        "Decision path: partial_pay.",
+        "Reason codes: COVERED_INCIDENT, PER_CLAIM_LIMIT_APPLIED, DEDUCTIBLE_APPLIED.",
+        "Policy basis includes citation or clause metadata."
+      ]
+    },
+    "explanation_confidence": {
+      "score": 0.96,
+      "source": "llm_output_validation",
+      "faithfulness_to_tools": "high",
+      "citation_alignment": "high",
+      "calculation_alignment": "pass",
+      "unsupported_claims_detected": false,
+      "uncertainty_level": "low",
+      "validation_issues": []
+    },
     "calculation": {
       "claimed_amount": 681994,
       "eligible_amount": 200000,
@@ -27,14 +52,81 @@
     "policy_basis": [
       {
         "source": "policy_documents.md",
-        "section": "2.2 비급여 통원 의료비",
-        "summary": "비급여 통원 의료비는 1회 한도 200,000원과 자기부담금 max(30,000원, 30%)을 적용한다."
+        "section": "2.2 Outpatient noncovered treatment",
+        "summary": "Outpatient noncovered treatment is eligible up to 200000 KRW per claim and then deductible rules apply.",
+        "clause_id": "SYN-MED-001-2.2",
+        "citation_id": "SYN-MED-001-2.2-A",
+        "retrieval_score": 0.91,
+        "retrieval_method": "keyword"
       }
     ],
-    "review_summary": "비급여 통원 의료비 담보 대상으로 보이며, 1회 한도와 자기부담금 적용 후 140,000원 일부 지급 권고입니다.",
+    "review_summary": "The claim appears eligible for outpatient noncovered treatment, but the per-claim limit and deductible reduce the recommended payable amount to 140000 KRW.",
     "reviewer_notes": [
-      "필수서류는 제출된 것으로 보입니다.",
-      "최종 지급 여부는 심사자가 약관 및 내부 기준에 따라 확인해야 합니다."
+      "Required documents appear complete.",
+      "This is an assistant recommendation; the reviewer retains final authority."
+    ]
+  },
+  "agent_output": {
+    "claim_id": "CLM-EVAL-EXAMPLE-0001",
+    "recommended_decision": "partial_pay",
+    "recommended_payable_amount": 140000,
+    "coverage_code": "COV_OUTPATIENT_NONCOVERED",
+    "coverage_name": "Outpatient noncovered treatment",
+    "missing_documents": [],
+    "reason_codes": [
+      "COVERED_INCIDENT",
+      "PER_CLAIM_LIMIT_APPLIED",
+      "DEDUCTIBLE_APPLIED"
+    ],
+    "requires_human_review": false,
+    "fraud_suspected": false,
+    "confidence": 0.94,
+    "confidence_assessment": {
+      "score_source": "deterministic_rules_with_llm_assistance",
+      "deterministic_confidence": 0.94,
+      "evidence_clarity": "high",
+      "judgment_difficulty": "medium",
+      "uncertainty_level": "low",
+      "uncertainty_explanation": "Coverage, document completeness, and payable calculation are aligned by deterministic tools; the main judgment point is the per-claim limit application.",
+      "assessment_basis": [
+        "Final confidence score is deterministic and is not replaced by LLM self-confidence.",
+        "Decision path: partial_pay.",
+        "Reason codes: COVERED_INCIDENT, PER_CLAIM_LIMIT_APPLIED, DEDUCTIBLE_APPLIED.",
+        "Policy basis includes citation or clause metadata."
+      ]
+    },
+    "explanation_confidence": {
+      "score": 0.96,
+      "source": "llm_output_validation",
+      "faithfulness_to_tools": "high",
+      "citation_alignment": "high",
+      "calculation_alignment": "pass",
+      "unsupported_claims_detected": false,
+      "uncertainty_level": "low",
+      "validation_issues": []
+    },
+    "calculation": {
+      "claimed_amount": 681994,
+      "eligible_amount": 200000,
+      "limit_applied": true,
+      "deductible_amount": 60000,
+      "payable_amount": 140000
+    },
+    "policy_basis": [
+      {
+        "source": "policy_documents.md",
+        "section": "2.2 Outpatient noncovered treatment",
+        "summary": "Outpatient noncovered treatment is eligible up to 200000 KRW per claim and then deductible rules apply.",
+        "clause_id": "SYN-MED-001-2.2",
+        "citation_id": "SYN-MED-001-2.2-A",
+        "retrieval_score": 0.91,
+        "retrieval_method": "keyword"
+      }
+    ],
+    "review_summary": "The claim appears eligible for outpatient noncovered treatment, but the per-claim limit and deductible reduce the recommended payable amount to 140000 KRW.",
+    "reviewer_notes": [
+      "Required documents appear complete.",
+      "This is an assistant recommendation; the reviewer retains final authority."
     ]
   },
   "tool_trace": [

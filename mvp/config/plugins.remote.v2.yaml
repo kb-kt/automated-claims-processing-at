@@ -1,0 +1,25 @@
+plugins:
+  policy_search:
+    module: ai_agent_template.developer_kit.plugins.synthetic.policy_search_plugin
+    class: SyntheticPolicySearchPlugin
+  coverage_resolver:
+    module: ai_agent_template.developer_kit.plugins.synthetic.coverage_resolver_plugin
+    class: SyntheticCoverageResolverPlugin
+  document_checker:
+    module: ai_agent_template.developer_kit.plugins.synthetic.document_checker_plugin
+    class: SyntheticDocumentCheckerPlugin
+  exclusion_checker:
+    module: ai_agent_template.developer_kit.plugins.synthetic.exclusion_checker_plugin
+    class: SyntheticExclusionCheckerPlugin
+  payable_calculator:
+    module: ai_agent_template.developer_kit.plugins.synthetic.payable_calculator_plugin
+    class: SyntheticPayableCalculatorPlugin
+  risk_checker:
+    module: ai_agent_template.developer_kit.plugins.synthetic.risk_checker_plugin
+    class: SyntheticRiskCheckerPlugin
+  fraud_signal_checker:
+    module: mvp.app.plugins.remote_fraud_signal_checker_v2
+    class: RemoteFraudSignalCheckerV2Plugin
+  decision_validator:
+    module: ai_agent_template.developer_kit.plugins.synthetic.decision_validator_plugin
+    class: SyntheticDecisionValidatorPlugin

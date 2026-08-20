@@ -1,0 +1,13 @@
+specialist_agents:
+  policy_coverage_analysis:
+    module: ai_agent_template.developer_kit.plugins.synthetic_insurer.specialist_plugins
+    class: SyntheticInsurerPolicyCoveragePlugin
+  document_understanding:
+    module: ai_agent_template.developer_kit.plugins.synthetic_insurer.specialist_plugins
+    class: SyntheticInsurerDocumentUnderstandingPlugin
+  medical_review_causality:
+    module: ai_agent_template.developer_kit.plugins.synthetic_insurer.specialist_plugins
+    class: SyntheticInsurerMedicalReviewPlugin
+  fraud_risk_analysis:
+    module: ai_agent_template.developer_kit.plugins.synthetic_insurer.specialist_plugins
+    class: SyntheticInsurerFraudRiskPlugin

@@ -1,0 +1,345 @@
+# Fraud_Check Integration PRD
+
+## 1. Purpose
+
+Automated_Claims_Processing must integrate with the external `Fraud_Check` service during the existing claim review workflow. The integration replaces only the `fraud_signal_checker` tool implementation while preserving the existing workflow order, tool contract, RecordingToolRegistry behavior, audit logging boundary, and downstream claim review logic.
+
+The integration is fail-closed. If Fraud_Check reports fraud risk or if Fraud_Check cannot be reached or returns an invalid response, the claim must be routed to `human_review`. The system must not automatically deny a claim based on fraud signals.
+
+## 2. Scope
+
+Initial implementation scope:
+
+- Add a remote HTTP `fraud_signal_checker` plugin in `ai_agent_template`.
+- Add the same remote HTTP plugin in `mvp`.
+- Add separate remote plugin configuration files so `fraud_signal_checker` can use the remote plugin when Fraud_Check integration is explicitly enabled.
+- Keep default local/demo plugin configuration on the synthetic fraud checker until Fraud_Check is complete.
+- Preserve existing synthetic fraud plugin files as fallback references, but do not use synthetic fraud results when the remote service fails.
+- Add tests for successful responses, failure responses, conformance, and end-to-end review behavior.
+- Document local run configuration and operational fallback behavior.
+
+Out of scope:
+
+- Building or changing the Fraud_Check service itself.
+- Making final fraud determinations.
+- Blocking all review workflow execution before schema validation.
+- Logging raw claims or personal identifiers to application logs.
+
+## 3. Integration Flow
+
+1. Automated_Claims_Processing receives a claim payload.
+2. The existing claim review workflow reaches the `fraud_signal_checker` step.
+3. The remote `fraud_signal_checker` plugin calls Fraud_Check HTTP API.
+4. Fraud_Check response is converted into the existing tool result envelope.
+5. The rest of the claim review workflow continues.
+6. If `fraud_suspected=true`, the workflow must set:
+   - `requires_human_review=true`
+   - `recommended_decision="human_review"`
+7. If the remote call fails, times out, returns invalid JSON, or violates the response contract, the tool returns `status="failed"` and the existing workflow fail-closes to `human_review`.
+
+## 4. Fraud_Check API Contract
+
+Base URL:
+
+```text
+FRAUD_CHECK_URL
+```
+
+Default:
+
+```text
+http://127.0.0.1:8010
+```
+
+Endpoint:
+
+```text
+POST /v1/fraud/check
+```
+
+Timeout:
+
+```text
+3000ms
+```
+
+Optional authorization:
+
+```text
+FRAUD_CHECK_API_KEY
+```
+
+When configured, the plugin sends:
+
+```text
+Authorization: Bearer <FRAUD_CHECK_API_KEY>
+```
+
+Request body:
+
+```json
+{
+  "claim": {},
+  "claim_history": {},
+  "signals": {},
+  "insured_profile": {}
+}
+```
+
+Response body:
+
+```json
+{
+  "fraud_suspected": false,
+  "fraud_reason_codes": [],
+  "risk_score": 0,
+  "routing": "continue_claim_review",
+  "engine_version": "1.0.0"
+}
+```
+
+Response validation:
+
+- `fraud_suspected`: required boolean
+- `fraud_reason_codes`: required array of strings
+- `risk_score`: required number or integer between 0 and 100
+- `routing`: required enum, `human_review` or `continue_claim_review`
+- `engine_version`: required non-empty string
+
+Routing invariant:
+
+- If `fraud_suspected=true`, `routing` must be `human_review`.
+- If `routing=human_review`, the tool result should be treated as a human-review fraud/risk route even if other review logic would otherwise continue.
+
+## 5. Tool Plugin Contract
+
+The plugin must comply with the existing `fraud_signal_checker` ToolPlugin 1.0.0 contract:
+
+```text
+name = "fraud_signal_checker"
+contract_name = "fraud_signal_checker"
+contract_version = "1.0.0"
+failure_policy = "human_review"
+```
+
+Success tool result must include at minimum:
+
+```json
+{
+  "fraud_suspected": false,
+  "fraud_reason_codes": []
+}
+```
+
+Additional allowed result fields:
+
+- `risk_score`
+- `routing`
+- `engine_version`
+
+Failure tool result:
+
+```json
+{
+  "tool_name": "fraud_signal_checker",
+  "status": "failed",
+  "result": null,
+  "error": {
+    "error_code": "REMOTE_TIMEOUT",
+    "message": "Fraud_Check request failed",
+    "retryable": true
+  },
+  "duration_ms": 0,
+  "metadata": {
+    "contract_version": "1.0.0",
+    "failure_policy": "human_review"
+  }
+}
+```
+
+The plugin must not return synthetic fraud decisions after remote failures.
+
+## 6. Failure Handling
+
+The plugin must classify failures into safe error codes:
+
+- `REMOTE_TIMEOUT`
+- `REMOTE_CONNECTION_ERROR`
+- `REMOTE_HTTP_ERROR`
+- `REMOTE_INVALID_JSON`
+- `REMOTE_CONTRACT_ERROR`
+- `REMOTE_UNEXPECTED_ERROR`
+
+Retryable:
+
+- timeout: true
+- connection error: true
+- HTTP 5xx: true
+- HTTP 4xx: false
+- invalid JSON: false
+- contract error: false
+- unexpected error: false
+
+The WorkflowRunner already handles failed fraud tool results by producing a human-review output. This behavior must be preserved.
+
+## 7. Security and Privacy Requirements
+
+- Do not log full claim payloads.
+- Do not log raw insured identifiers, receipt identifiers, or provider identifiers in application logs.
+- Tool call audit logs may store status, duration, error code, and contract version.
+- Existing tool call persistence may store tool request/response payloads for local development; production implementations must apply masking, minimization, retention, and access control before storing raw tool payloads.
+- Authorization token must be loaded from environment variable and never hard-coded.
+
+## 8. Configuration
+
+Template Starter Kit:
+
+```yaml
+# ai_agent_template/developer_kit/starter_kit/config/plugins.remote.yaml
+fraud_signal_checker:
+  module: ai_agent_template.developer_kit.plugins.remote_fraud_signal_checker
+  class: RemoteFraudSignalCheckerPlugin
+```
+
+MVP:
+
+```yaml
+# mvp/config/plugins.remote.yaml
+fraud_signal_checker:
+  module: mvp.app.plugins.remote_fraud_signal_checker
+  class: RemoteFraudSignalCheckerPlugin
+```
+
+Environment:
+
+```powershell
+$env:CLAIM_AGENT_PLUGIN_CONFIG = "C:\Users\PC\AA\Automated_Claims_Processing\ai_agent_template\developer_kit\starter_kit\config\plugins.remote.yaml"
+$env:CLAIM_MVP_PLUGIN_CONFIG = "C:\Users\PC\AA\Automated_Claims_Processing\mvp\config\plugins.remote.yaml"
+$env:FRAUD_CHECK_URL = "http://127.0.0.1:8010"
+$env:FRAUD_CHECK_API_KEY = "optional-token"
+```
+
+Default behavior before Fraud_Check is complete:
+
+- `ai_agent_template/developer_kit/starter_kit/config/plugins.yaml` uses the synthetic fraud checker.
+- `mvp/config/plugins.yaml` uses the synthetic fraud checker.
+- Remote fail-closed behavior is activated only when `plugins.remote.yaml` is selected through the plugin config environment variable.
+
+## 9. Test Requirements
+
+Tests must cover:
+
+- normal `fraud_suspected=false` response
+- normal `fraud_suspected=true` response and final `human_review`
+- timeout
+- connection failure
+- HTTP 4xx/5xx
+- invalid JSON
+- missing required response fields
+- plugin conformance with ToolPlugin 1.0.0
+- claim input to remote fraud check to final review integration
+
+## 10. Acceptance Criteria
+
+- Existing full test suite passes.
+- If Fraud_Check returns `fraud_suspected=true`, final output satisfies:
+  - `requires_human_review=true`
+  - `recommended_decision="human_review"`
+- If Fraud_Check is stopped or unreachable, the system does not auto-pay or auto-deny; it routes to `human_review`.
+- Synthetic fraud plugin files remain in the repository.
+- Default local/demo runtime does not require Fraud_Check to be running.
+- Remote integration runtime can be enabled through `plugins.remote.yaml`.
+- WorkflowRunner and RecordingToolRegistry structure remain unchanged.
+
+## 11. v2 Raw Evidence Integration
+
+Fraud_Check v2 integration adds raw-evidence based analysis while keeping the v1 plugin and synthetic plugin available.
+
+New internal Claims APIs exposed by both Template Starter Kit and MVP:
+
+```text
+GET /internal/v1/fraud-context/claims/{claim_id}
+GET /internal/v1/claims/{claim_id}/documents
+GET /internal/v1/documents/{document_id}/content
+```
+
+Internal API behavior:
+
+- handler code delegates to repository and service layers; SQL is not executed directly in API handlers
+- `CLAIMS_INTERNAL_API_KEY` optionally protects all internal APIs with `Authorization: Bearer <token>`
+- claim history is recomputed from individual historical claims where available
+- when historical document PDFs are not available, the API exposes a Stage A `historical_document_fingerprints` index derived from historical receipt IDs and receipt hashes
+- document content is served only through registered `document_id` metadata, never through a client-supplied file path
+- path traversal, unsupported MIME types, oversized files, missing files, and unreadable documents are rejected with distinguishable HTTP errors
+- PDF bytes, full claim payloads, and tokens must not be written to general application logs
+
+v2 Fraud_Check plugin:
+
+```text
+ai_agent_template/developer_kit/plugins/remote_fraud_signal_checker_v2.py
+mvp/app/plugins/remote_fraud_signal_checker_v2.py
+```
+
+v2 endpoint:
+
+```text
+POST {FRAUD_CHECK_URL}/v2/fraud/check
+```
+
+Runtime environment:
+
+```text
+FRAUD_CHECK_URL=http://127.0.0.1:8010
+FRAUD_CHECK_API_KEY=<optional>
+FRAUD_CHECK_V1_TIMEOUT_MS=3000
+FRAUD_CHECK_V2_TIMEOUT_MS=15000
+FRAUD_ANALYSIS_MODE=raw_evidence|upstream_signal_assisted
+CLAIMS_INTERNAL_BASE_URL=http://127.0.0.1:<claims-app-port>
+CLAIMS_INTERNAL_API_KEY=<optional>
+CLAIMS_INTERNAL_MAX_DOCUMENT_BYTES=10000000
+```
+
+Plugin selection:
+
+```text
+# synthetic default
+ai_agent_template/developer_kit/starter_kit/config/plugins.yaml
+mvp/config/plugins.yaml
+
+# remote v1
+ai_agent_template/developer_kit/starter_kit/config/plugins.remote.yaml
+mvp/config/plugins.remote.yaml
+
+# remote v2 raw evidence
+ai_agent_template/developer_kit/starter_kit/config/plugins.remote.v2.yaml
+mvp/config/plugins.remote.v2.yaml
+```
+
+Raw evidence rule:
+
+- in `raw_evidence` mode, upstream boolean fraud signals such as `fraudulent_document`, `document_claim_mismatch`, `abnormal_document_dates`, and `suspected_duplicate_receipt` are not forwarded as fraud truth
+- in `upstream_signal_assisted` mode, selected upstream signals may be forwarded with provenance
+- `fraud_labels_*` and claim-review `labels_*` files must never be loaded into runtime DBs or sent to Fraud_Check
+
+v2 fail-closed invariants:
+
+- `fraud_suspected=true` requires `routing=human_review` and `requires_human_review=true`
+- Fraud_Check response must not include pay, deny, payable amount, or final claim payment decision fields
+- timeout, connection failure, HTTP error, invalid JSON, schema violation, request mismatch, claim mismatch, internal API failure, or safety invariant violation returns a failed tool envelope
+- failed fraud tool execution always routes the claims workflow to `human_review`; it must not auto-pay or auto-deny
+
+Seed commands:
+
+```powershell
+python -m ai_agent_template.developer_kit.starter_kit.app.db.seed_fraud_context --split dev --split eval
+python -m mvp.app.db.seed_fraud_context --split dev --split eval
+```
+
+These loaders ingest generated fraud context, historical claims, document metadata, and claim-document links. They do not ingest `fraud_labels_dev.jsonl`, `fraud_labels_eval.jsonl`, `labels_dev.jsonl`, or `labels_eval.jsonl`.
+
+Historical document note:
+
+- current claim documents are available through `document_metadata` and the document content API
+- historical claim original PDFs are not required for Stage A
+- Stage A exposes `historical_document_fingerprints` with `claim_id`, synthetic `document_id`, `receipt_id`, `content_hash`, `text_fingerprint`, `perceptual_hash`, `document_type`, and `document_status=metadata_only`
+- future real-data integration can replace metadata-only fingerprints with historical document metadata and registered content references

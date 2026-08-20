@@ -1,0 +1,122 @@
+[
+  {
+    "kcd_code": "M54.5",
+    "edi_code": "EDI-MM010",
+    "relationship": "compatible",
+    "medical_necessity_level": "partially_supported",
+    "required_documents": [
+      "diagnosis_note",
+      "medical_statement"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "continue_claim_review",
+    "reason_code": "DIAGNOSIS_TREATMENT_COMPATIBLE",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  },
+  {
+    "kcd_code": "J06.9",
+    "edi_code": "EDI-RX001",
+    "relationship": "compatible",
+    "medical_necessity_level": "supported",
+    "required_documents": [
+      "diagnosis_note",
+      "medical_statement"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "continue_claim_review",
+    "reason_code": "DIAGNOSIS_TREATMENT_COMPATIBLE",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  },
+  {
+    "kcd_code": "J10.1",
+    "edi_code": "EDI-OP001",
+    "relationship": "compatible",
+    "medical_necessity_level": "supported",
+    "required_documents": [
+      "diagnosis_note",
+      "medical_statement"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "continue_claim_review",
+    "reason_code": "DIAGNOSIS_TREATMENT_COMPATIBLE",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  },
+  {
+    "kcd_code": "K30",
+    "edi_code": "EDI-OP002",
+    "relationship": "compatible",
+    "medical_necessity_level": "supported",
+    "required_documents": [
+      "diagnosis_note",
+      "medical_statement"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "continue_claim_review",
+    "reason_code": "DIAGNOSIS_TREATMENT_COMPATIBLE",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  },
+  {
+    "kcd_code": "K35.9",
+    "edi_code": "EDI-IP002",
+    "relationship": "compatible",
+    "medical_necessity_level": "supported",
+    "required_documents": [
+      "diagnosis_note",
+      "medical_statement"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "continue_claim_review",
+    "reason_code": "DIAGNOSIS_TREATMENT_COMPATIBLE",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  },
+  {
+    "kcd_code": "M54.5",
+    "edi_code": "EDI-MR001",
+    "relationship": "weakly_related",
+    "medical_necessity_level": "insufficient_evidence",
+    "required_documents": [
+      "diagnosis_note",
+      "medical_statement",
+      "test_result_summary"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "request_documents",
+    "reason_code": "MEDICAL_EVIDENCE_INSUFFICIENT",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  },
+  {
+    "kcd_code": "J06.9",
+    "edi_code": "EDI-MM010",
+    "relationship": "not_related",
+    "medical_necessity_level": "unsupported",
+    "required_documents": [
+      "diagnosis_note",
+      "physician_note"
+    ],
+    "age_min": null,
+    "age_max": null,
+    "sex_constraint": "any",
+    "review_policy": "human_review",
+    "reason_code": "DIAGNOSIS_TREATMENT_RELATION_WEAK",
+    "version": "synthetic-medical-rule-1.0.0",
+    "synthetic": true
+  }
+]

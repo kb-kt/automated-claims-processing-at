@@ -1,0 +1,116 @@
+{
+  "product_id": "HKG_LIFE_ANSIMCARE2504_2_TYPE_DISABILITY",
+  "product_name": "무배당 흥국생명 안심케어보험2504_2형(장해보장형)",
+  "product_type": "real_insurance_product",
+  "version": "1.0",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "흥국생명에서 판매하는 무배당 안심케어보험2504 시리즈의 2형(장해보장형) 정기형 질병 보험. 50% 이상 장해 시 보험금 지급 조건을 가진 비갱신형 신상품.",
+  "coverages": [
+    {
+      "coverage_code": "COV_DISABILITY_PAYMENT_50PCT_OVER",
+      "name": "장해 50% 이상 보험금",
+      "care_setting": "disability",
+      "benefit_category": "disability",
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0,
+        "fixed_amount": 0
+      },
+      "required_documents": [
+        "claim_form",
+        "disability_certificate"
+      ],
+      "source_fields": {
+        "product_type": "질병",
+        "rider_type": "장해",
+        "product_period": "정기",
+        "renewable_type": "비갱신형",
+        "payment_conditions7": "50%이상 장해"
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "계약자, 피보험자, 수익자의 고의 행위"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_MISSING_INDEMNITY_AMOUNTS",
+      "condition": "insured amount or minimum guaranteed amount not specified in product data"
+    },
+    {
+      "code": "HR_AMBIGUOUS_POLICY_EFFECTIVE_DATE",
+      "condition": "effective date not specified, default used"
+    },
+    {
+      "code": "HR_PAYMENT_CONDITION_UNCERTAIN",
+      "condition": "payment conditions partially missing or unclear"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_04.질병/보험_04_무배당 흥국생명 안심케어보험2504_2형(장해보장형).json"
+  },
+  "extraction_warnings": [
+    "insured_amount field missing in source, coverage limits not established",
+    "effective_date inferred as 2000-01-01 due to no date info",
+    "deductible not stated in source, defaulting to 0% rate",
+    "required_documents for disability coverage partially assumed as claim_form, disability_certificate",
+    "payment conditions partially unknown (payment_conditions3-6 missing)"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_id",
+      "source_field": "company, mother_product_name, product_name",
+      "source_value": "흥국생명, 무배당 흥국생명 안심케어보험2504, 2형(장해보장형)",
+      "confidence": "high"
+    },
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "무배당 흥국생명 안심케어보험2504_2형(장해보장형)",
+      "confidence": "high"
+    },
+    {
+      "field": "products.product_type",
+      "source_field": "product_type",
+      "source_value": "질병",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].benefit_category",
+      "source_field": "rider_type, payment_conditions7",
+      "source_value": "장해, 50%이상 장해",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0]",
+      "source_field": "exclusion_items",
+      "source_value": "계약자, 피보험자, 수익자의 고의",
+      "confidence": "high"
+    },
+    {
+      "field": "products.version",
+      "source_field": "none",
+      "source_value": "inferred default 1.0",
+      "confidence": "low"
+    },
+    {
+      "field": "products.effective_date",
+      "source_field": "none",
+      "source_value": "default 2000-01-01",
+      "confidence": "low"
+    }
+  ]
+}

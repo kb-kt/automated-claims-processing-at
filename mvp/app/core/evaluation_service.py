@@ -6,8 +6,15 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from ai_agent_template.developer_kit.sdk.claim_agent_sdk import EvaluationRunner
-from ai_agent_template.developer_kit.sdk.claim_agent_sdk.errors import EvaluationError
+from ai_agent_template.developer_kit.sdk.claim_agent_sdk import (
+    EvaluationRunner,
+    ReleaseGate,
+    assert_no_label_leakage,
+)
+from ai_agent_template.developer_kit.sdk.claim_agent_sdk.errors import (
+    EvaluationError,
+    SafetyValidationError,
+)
 
 from ..db.repository import ClaimReviewRepository
 from .errors import NotFound, ValidationFailed
@@ -57,6 +64,24 @@ class EvaluationService:
         request = request or {}
         claims_path = _resolve_path(request.get("claims_path") or self.settings.claims_eval_path)
         labels_path = _resolve_path(request.get("labels_path") or self.settings.labels_eval_path)
+        document_labels_path = _resolve_path(
+            request.get("document_extraction_labels_path")
+            or self.settings.document_extraction_labels_eval_path
+        )
+        if not document_labels_path.exists():
+            document_labels_path = self.settings.fraud_generated_dir / "medical_document_metadata_eval.jsonl"
+        code_mapping_labels_path = _resolve_path(
+            request.get("code_mapping_labels_path")
+            or self.settings.code_mapping_labels_eval_path
+        )
+        medical_labels_path = _resolve_path(
+            request.get("medical_labels_path")
+            or self.settings.medical_labels_eval_path
+        )
+        policy_coverage_labels_path = _resolve_path(
+            request.get("policy_coverage_labels_path")
+            or self.settings.policy_coverage_labels_eval_path
+        )
         dataset_name = str(
             request.get("dataset_name")
             or request.get("dataset")
@@ -100,11 +125,17 @@ class EvaluationService:
             result = EvaluationRunner(self.runtime.template).evaluate(
                 outputs_path,
                 labels_subset_path,
+                document_labels_path=document_labels_path,
+                code_mapping_labels_path=code_mapping_labels_path,
+                medical_labels_path=medical_labels_path,
+                policy_coverage_labels_path=policy_coverage_labels_path,
             )
         except EvaluationError as exc:
             raise ValidationFailed(str(exc)) from exc
 
-        passed = _passes_mvp_gates(result["metrics"])
+        gate = ReleaseGate.from_file(self.runtime.template.root / "eval" / "thresholds.yaml")
+        gate_result = gate.evaluate(result["metrics"])
+        passed = gate_result["passed"]
         self.repository.save_evaluation_run(
             run_id=run_id,
             dataset_name=dataset_name,
@@ -122,6 +153,7 @@ class EvaluationService:
             "dataset_size": result["dataset_size"],
             "evaluated_outputs": result["evaluated_outputs"],
             "metrics": result["metrics"],
+            "release_gate": gate_result,
             "failure_cases": result["failure_cases"],
             "outputs_path": str(outputs_path),
             "labels_path_redacted": True,
@@ -135,12 +167,17 @@ class EvaluationService:
 
 
 def _assert_claim_has_no_label_fields(claim_payload: dict[str, Any]) -> None:
-    leaked = sorted(FORBIDDEN_LABEL_FIELDS & set(claim_payload))
-    if leaked:
+    try:
+        assert_no_label_leakage(
+            claim_payload,
+            context="MVP evaluation claim",
+            forbid_agent_output_fields=True,
+        )
+    except SafetyValidationError as exc:
         raise ValidationFailed(
             "Evaluation claims must not include answer-label or agent-output fields.",
-            [f"forbidden top-level field: {field}" for field in leaked],
-        )
+            exc.findings,
+        ) from exc
 
 
 def _copy_matching_labels(source: Path, target: Path, claim_ids: list[str]) -> None:
@@ -161,21 +198,6 @@ def _copy_matching_labels(source: Path, target: Path, claim_ids: list[str]) -> N
             "Labels file does not contain all evaluated claim IDs.",
             [f"missing label claim_id: {claim_id}" for claim_id in sorted(missing)],
         )
-
-
-def _passes_mvp_gates(metrics: dict[str, Any]) -> bool:
-    return bool(
-        metrics.get("schema_validity", 0) == 1.0
-        and metrics.get("decision_accuracy", 0) >= 0.90
-        and metrics.get("coverage_accuracy", 0) >= 0.95
-        and metrics.get("payable_amount_exact_match", 0) >= 0.95
-        and metrics.get("missing_document_exact_match", 0) >= 0.95
-        and metrics.get("human_review_recall", 0) >= 0.98
-        and metrics.get("fraud_suspected_recall", 0) >= 0.98
-        and metrics.get("false_denial_rate", 1) <= 0.01
-        and metrics.get("false_payment_rate", 1) <= 0.01
-        and metrics.get("human_review_miss_rate", 1) <= 0.01
-    )
 
 
 def _public_evaluation_run(stored: dict[str, Any]) -> dict[str, Any]:

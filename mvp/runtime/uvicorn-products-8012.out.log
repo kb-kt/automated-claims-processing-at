@@ -1,0 +1,14 @@
+INFO:     127.0.0.1:60190 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60191 - "GET /products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49669 - "GET /ui/customer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49669 - "GET /products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49669 - "GET /products/SYN-MED-001/policies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52178 - "GET /demo/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52179 - "POST /reviews HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60648 - "GET /reviews/MVP-DEMO-NORMAL-PAY/audit-logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60149 - "GET /ui/demo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60149 - "GET /demo/scenarios HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51619 - "GET /demo/fraud-presets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51619 - "GET /products/MIRAE-M-CARE-2024-2-3ROOM-HOSP-RDR/policies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65001 - "GET /demo/scenarios HTTP/1.1" 200 OK

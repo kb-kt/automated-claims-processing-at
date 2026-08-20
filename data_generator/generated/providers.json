@@ -1,0 +1,674 @@
+[
+  {
+    "provider_id": "PROV-SYN-DEV-00DB8D",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-00DB8D",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-101B69",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-101B69",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-130665",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-130665",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-3F8643",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-3F8643",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-4E1F9A",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-4E1F9A",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-5477AE",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-5477AE",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-54ED23",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-54ED23",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-575EC9",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-575EC9",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-62FF94",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-62FF94",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-6B63B2",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-6B63B2",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-6DC729",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-6DC729",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-75C876",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-75C876",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-85D6D3",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-85D6D3",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-892186",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-892186",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-90028C",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-90028C",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-9669D3",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-9669D3",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-97252E",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-97252E",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-A6E8D2",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-A6E8D2",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-AB58B6",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-AB58B6",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-BA0D8F",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-BA0D8F",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-BE57E9",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-BE57E9",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-DE2BA2",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-DE2BA2",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-DEV-DF16FC",
+    "provider_name": "Synthetic Provider PROV-SYN-DEV-DF16FC",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-01AD08",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-01AD08",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-0BFB00",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-0BFB00",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-10ECF0",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-10ECF0",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-2FBDDA",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-2FBDDA",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-327A92",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-327A92",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-3AEBD5",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-3AEBD5",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-403348",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-403348",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-40E24D",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-40E24D",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-6372D0",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-6372D0",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-681BCA",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-681BCA",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-78C8F7",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-78C8F7",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-8A4A13",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-8A4A13",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-8B087F",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-8B087F",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-921442",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-921442",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-93DE4E",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-93DE4E",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-B25C72",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-B25C72",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-B57CEA",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-B57CEA",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-B81CC9",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-B81CC9",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-C76B12",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-C76B12",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-C98118",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-C98118",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-ED3E93",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-ED3E93",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-F5C196",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-F5C196",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-EVAL-F6B0A5",
+    "provider_name": "Synthetic Provider PROV-SYN-EVAL-F6B0A5",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-001",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-001",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-002",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-002",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-003",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-003",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-004",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-004",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-005",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-005",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-006",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-006",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-007",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-007",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-008",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-008",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-009",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-009",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-010",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-010",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-011",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-011",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-012",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-012",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-013",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-013",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-014",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-014",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-015",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-015",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-016",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-016",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-017",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-017",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-018",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-018",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-019",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-019",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-020",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-020",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-021",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-021",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-022",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-022",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-023",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-023",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-024",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-024",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-HOSP-025",
+    "provider_name": "Synthetic Provider PROV-SYN-HOSP-025",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-001",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-001",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-002",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-002",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-005",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-005",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-006",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-006",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-007",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-007",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-008",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-008",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-009",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-009",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-010",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-010",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-012",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-012",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-013",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-013",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-014",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-014",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-019",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-019",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-020",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-020",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-022",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-022",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-NONMED-024",
+    "provider_name": "Synthetic Provider PROV-SYN-NONMED-024",
+    "provider_type": "non_medical_provider",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-001",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-001",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-002",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-002",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-003",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-003",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-004",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-004",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-005",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-005",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-006",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-006",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-007",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-007",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-008",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-008",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-009",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-009",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-010",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-010",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-011",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-011",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-012",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-012",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-013",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-013",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-014",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-014",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-015",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-015",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-016",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-016",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-017",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-017",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-018",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-018",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-019",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-019",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-020",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-020",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-021",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-021",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-022",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-022",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-023",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-023",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-024",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-024",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-PHARM-025",
+    "provider_name": "Synthetic Provider PROV-SYN-PHARM-025",
+    "provider_type": "pharmacy",
+    "synthetic": true
+  },
+  {
+    "provider_id": "PROV-SYN-REPEAT-001",
+    "provider_name": "Synthetic Provider PROV-SYN-REPEAT-001",
+    "provider_type": "medical_institution",
+    "synthetic": true
+  }
+]

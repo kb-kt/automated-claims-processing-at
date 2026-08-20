@@ -1,0 +1,97 @@
+{
+  "product_id": "ABL-UNIV-HLTH-LIFE-2301",
+  "product_name": "ABL 무배당 더나은변액유니버셜통합건강종신보험 2301 _주계약",
+  "product_type": "real_insurance_product",
+  "version": "2301",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "ABL 생명 변액 유니버셜 통합 건강 종신보험, 월납이며 비갱신형 상품으로 최저사망보험금을 보증하며 해약환급금 지급 조건 있음.",
+  "coverages": [
+    {
+      "coverage_code": "COV_LIFE_DEATH",
+      "name": "종신보험 사망보험금",
+      "care_setting": "death",
+      "benefit_category": "death",
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0,
+        "fixed_amount": 0
+      },
+      "required_documents": [
+        "claim_form",
+        "death_certificate"
+      ],
+      "source_fields": {
+        "product_type": "변액",
+        "rider_type": "종신",
+        "minimum_guarantee": "최저사망보험금 보증 (이미 납입한 보험료). ",
+        "refund_type": "해약환급금 있음",
+        "refund_condition": "보험료 계산 시 적용한 위험률로 산출한 순보험료식 계약자적립액에서 해약공제액\n을 공제한 금액을 해약환급금으로 지급"
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "계약자, 피보험자, 수익자의 고의"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_MISSING_INSURED_AMOUNT",
+      "condition": "insured_amount unknown, coverage limit needs manual verification"
+    },
+    {
+      "code": "HR_UNCLEAR_PAYMENT_FREQUENCY",
+      "condition": "payment_type is monthly but flexible payment conditions require review"
+    },
+    {
+      "code": "HR_EFFECTIVE_DATE_ASSUMED",
+      "condition": "effective_date defaulted to 2000-01-01 due to missing exact start date"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_07.변액/보험_07_ABL 무배당 더나은변액유니버셜통합건강종신보험 2301 _주계약.json"
+  },
+  "extraction_warnings": [
+    "insured_amount is not specified numerically; payment_conditions missing",
+    "effective_date not found; defaulted to 2000-01-01",
+    "deductible not explicitly stated; set to 0% rate as fallback",
+    "required_documents minimally set; source lacks detailed document list"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_id",
+      "source_field": "product_full_name",
+      "source_value": "ABL 무배당 더나은변액유니버셜통합건강종신보험 2301 _주계약",
+      "confidence": "high"
+    },
+    {
+      "field": "products.version",
+      "source_field": "product_full_name",
+      "source_value": "2301",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].name",
+      "source_field": "minimum_guarantee",
+      "source_value": "최저사망보험금 보증 (이미 납입한 보험료). ",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0].name",
+      "source_field": "exclusion_items",
+      "source_value": "계약자, 피보험자, 수익자의 고의",
+      "confidence": "high"
+    }
+  ]
+}

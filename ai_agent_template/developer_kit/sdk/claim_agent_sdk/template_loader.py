@@ -61,6 +61,10 @@ class TemplateBundle:
     def retrieval_result_schema(self) -> dict[str, Any]:
         return self.read_json("schemas/retrieval_result.schema.json")
 
+    @property
+    def agent_report_schema(self) -> dict[str, Any]:
+        return self.read_json("schemas/agent_report.schema.json")
+
     def tool_contracts(self) -> dict[str, dict[str, Any]]:
         contracts_dir = self.require("tools/contracts")
         contracts: dict[str, dict[str, Any]] = {}

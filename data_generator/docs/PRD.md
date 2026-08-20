@@ -413,3 +413,169 @@ Fraud-signal generation must use privacy-minimized behavior features:
 - no direct name, resident registration number, phone, address, or bank account values
 
 Age-based generation does not create automatic denial labels. Age edge cases may create `human_review` labels only when the hidden adjudication rule requires reviewer confirmation.
+
+## 15. Fraud_Check Synthetic Data Extension
+
+### 15.1 Purpose
+
+The Data Generator must also create synthetic data for Fraud_Check Agent development and evaluation. This extension keeps the existing claim-review schema compatible with the AI Agent Template while adding fraud-specific context, medical-document PDFs, document metadata, and isolated fraud labels.
+
+### 15.2 Required Outputs
+
+Fraud_Check generation writes the following files under `data_generator/generated/`:
+
+- `insureds.json`
+- `providers.json`
+- `historical_claims.jsonl`
+- `document_metadata_dev.jsonl`
+- `document_metadata_eval.jsonl`
+- `claim_document_links_dev.jsonl`
+- `claim_document_links_eval.jsonl`
+- `fraud_labels_dev.jsonl`
+- `fraud_labels_eval.jsonl`
+- `fraud_context_seed_dev.jsonl`
+- `fraud_context_seed_eval.jsonl`
+- `documents/dev/{claim_id}/*.pdf`
+- `documents/eval/{claim_id}/*.pdf`
+
+Existing claim-review files remain unchanged in purpose:
+
+- `claims_dev.jsonl`
+- `claims_eval.jsonl`
+- `labels_dev.jsonl`
+- `labels_eval.jsonl`
+
+### 15.3 Synthetic Safety Rules
+
+- No real person, hospital, resident registration number, phone number, address, or account number may be generated.
+- Synthetic IDs must use clear prefixes such as `INS-SYN-*`, `PROV-SYN-*`, `CLM-DEV-*`, `CLM-EVAL-*`, `DOC-SYN-*`, and `RCT-SYN-*`.
+- Every readable PDF must contain `SYNTHETIC TEST DOCUMENT / 실제 사용 불가`.
+- PDF metadata must mark the document as synthetic.
+- dev/eval insured IDs, receipt lineage, and document fingerprints must not overlap.
+
+### 15.4 Fraud Scenarios
+
+The generator must guarantee at least one dev and one eval row for:
+
+- normal clean claim
+- exact duplicate receipt hash
+- legacy duplicate receipt ID
+- altered duplicate receipt
+- forged amount
+- forged date
+- forged provider
+- explicit fraudulent-document signal
+- same insured/provider repeat boundary: 2 and 3 claims
+- provider-volume boundary: 49 and 50 claims
+- complex fraud combinations
+- hard negatives
+- missing document
+- corrupted PDF
+- low-OCR scan-like document
+- unreadable/protected document simulation
+
+Fraud-suspected labels must route to `human_review`; fraud suspicion must not be represented as automatic denial.
+
+### 15.5 Label Isolation
+
+`fraud_labels_dev.jsonl` and `fraud_labels_eval.jsonl` are evaluation-only files. Runtime claim payloads, claim history, document metadata, and PDFs must not contain `expected_*` fields or fraud answer reason codes. Fraud_Check runtime and claim-review workflow must not receive the fraud-label file path.
+
+### 15.6 History Aggregation
+
+`historical_claims.jsonl` must contain individual historical claim rows. Current claim `claim_history` aggregate values must be computed from those rows:
+
+- `prior_receipt_ids`
+- `prior_receipt_hashes`
+- `same_insured_provider_claims_30d`
+- `same_provider_claims_30d`
+- `same_diagnosis_claims_90d`
+- `manual_therapy_count_180d`
+
+The aggregation must include exactly-30-day claims, exclude claims older than 30 days for 30-day counters, and exclude future-dated claims.
+
+## 16. Medical Code and Causality Data Extension
+
+The Data Generator must be extendable to create synthetic data for medical review, KCD/EDI code mapping, and medical causality analysis. This supports the AI Agent Template's future specialist agents while preserving the current runtime label-isolation principle.
+
+### 16.1 Purpose
+
+Synthetic medical-review data must help evaluate whether a claim's diagnosis, treatment, documents, and prior medical context are medically coherent. The goal is not to make automatic medical denial decisions. The goal is to generate review cases where the Agent can recommend coverage analysis, additional documents, or human medical review.
+
+### 16.2 Runtime Medical Evidence Fields
+
+Generated claims now include an optional `medical_evidence` object that is compatible with the AI Agent Template input schema. This is runtime-safe evidence, not an answer label.
+
+The object contains:
+
+- KCD diagnosis-code candidates with confidence and provenance
+- EDI treatment/procedure-code candidates with confidence and provenance
+- ambiguity flag and ambiguity reason
+- prior diagnosis evidence within 180 days
+- prior surgery evidence within 365 days
+- prior test evidence within 180 days
+- treatment-continuity days
+- pre-existing-condition indicators
+- insurer-style medical routing rules with rule ID, version, routing, reason code, confidence, and evidence references
+
+These fields must remain compatible with `ai_agent_template` input schemas. If new runtime fields are required, the AI Agent Template schema must be versioned first and the Data Generator must follow that version.
+
+### 16.3 Label Isolation
+
+Medical-review labels must be separated from runtime payloads in the same way as claim-review labels and fraud labels.
+
+Evaluation-only files include:
+
+- `medical_labels_dev.jsonl`
+- `medical_labels_eval.jsonl`
+- `code_mapping_labels_dev.jsonl`
+- `code_mapping_labels_eval.jsonl`
+- `policy_coverage_labels_dev.jsonl`
+- `policy_coverage_labels_eval.jsonl`
+- `insurer_medical_routing_rules.json`
+
+Runtime claim files, document metadata, and PDF contents must not contain `expected_medical_decision`, `expected_causality`, `expected_kcd_code`, `expected_edi_code`, `medical_scenario`, `policy_coverage_scenario`, or label-only answer fields.
+
+`medical_evidence.insurer_medical_routing_rules` may include reviewer-routing evidence such as `human_review` or `request_documents`, but it must not include hidden scenario names or `expected_*` fields.
+
+The bundled `insurer_medical_routing_rules.json` is synthetic and must be replaceable with insurer-approved rules. Production rules must include owner, version, effective date, approval status, reason code, routing, and confidence guidance.
+
+### 16.4 Required Scenario Families
+
+The future generator should support at least:
+
+- clear KCD mapping
+- ambiguous KCD mapping requiring human review
+- clear EDI mapping
+- ambiguous EDI mapping requiring human review
+- diagnosis and treatment are compatible
+- diagnosis and treatment are weakly related
+- diagnosis and treatment are not clinically related
+- prior medical history suggests possible pre-existing condition
+- repeated treatment suggests possible excessive treatment
+- high-cost treatment with sufficient medical evidence
+- high-cost treatment with insufficient medical evidence
+- document OCR/text extraction failure requiring human review
+
+Medical suspicion must not be represented as automatic denial. Suspicious, ambiguous, or low-evidence medical cases should generate `human_review` or `request_documents` labels depending on the hidden adjudication rule.
+
+### 16.5 Document Understanding Data
+
+Generated medical documents should be extendable beyond receipts and statements to include:
+
+- diagnosis certificate
+- detailed medical bill
+- procedure or surgery record
+- test result summary
+- physician note
+- prior-treatment summary
+
+For each document, metadata should support text-based extraction and VLM/document-understanding evaluation:
+
+- document type
+- extraction mode: `text_pdf`, `ocr_text`, `scan_image`, `vlm_required`
+- extraction confidence bucket
+- table-extraction status
+- field-level extraction status
+- synthetic marker
+
+The Data Generator must keep synthetic markers in every generated document and must not use real medical records.

@@ -52,8 +52,9 @@ steps:
     type: model
     provider: configurable
     prompt: prompts/claim_review_prompt.md
-    on_invalid_json: retry_once_then_fail
+    criticality: advisory
+    on_invalid_json: continue_deterministic_with_warning
   - id: validate_output
     type: tool
     tool: decision_validator
-    on_failure: retry_normalization_once_then_fail
+    on_failure: human_review

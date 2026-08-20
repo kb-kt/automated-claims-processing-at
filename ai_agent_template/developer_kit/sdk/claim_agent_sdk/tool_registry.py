@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .errors import PluginError
+from .label_leakage import assert_no_label_leakage
 from .schema_validator import SchemaValidator
 from .template_loader import TemplateBundle
 
@@ -72,11 +73,13 @@ class ToolRegistry:
         plugin = self.get(tool_name)
         start = time.perf_counter()
         try:
+            assert_no_label_leakage(payload, context=f"{tool_name} tool input")
             self.validator.validate_tool_input(tool_name, payload)
             envelope = plugin.run(payload, context)
             duration_ms = int((time.perf_counter() - start) * 1000)
             result = _normalize_envelope(tool_name, envelope, duration_ms, contract["version"])
             if result.status == "success":
+                assert_no_label_leakage(result.result or {}, context=f"{tool_name} tool output")
                 self.validator.validate_tool_output(tool_name, result.result or {})
             return result
         except Exception as exc:  # Plugin boundary: convert to standard failure envelope.
@@ -116,4 +119,3 @@ def _normalize_envelope(
             **dict(envelope.get("metadata") or {}),
         },
     )
-

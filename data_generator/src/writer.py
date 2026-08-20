@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Iterable
 
@@ -12,6 +13,12 @@ def ensure_writable_output(path: Path, overwrite: bool) -> None:
         raise FileExistsError(
             f"Output directory is not empty: {path}. Pass --overwrite to replace files."
         )
+    if existing and overwrite:
+        for item in existing:
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
 
 
 def write_json(path: Path, data: object) -> None:

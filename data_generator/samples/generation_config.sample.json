@@ -72,5 +72,32 @@
       "coverage_code",
       "scenario_type"
     ]
+  },
+  "fraud_generation": {
+    "enabled": true,
+    "generate_pdfs": true,
+    "scan_pdf_ratio": 0.35,
+    "corrupt_document_ratio": 0.02,
+    "base_date": "2026-07-01",
+    "history_days": 180,
+    "provider_count": 80,
+    "insured_count": 400,
+    "scenario_ratios": {
+      "normal_clean": 0.08,
+      "duplicate_receipt": 0.14,
+      "document_forgery": 0.18,
+      "repeat_pattern": 0.14,
+      "provider_pattern": 0.14,
+      "complex_fraud": 0.12,
+      "hard_negative": 0.12,
+      "document_failure": 0.08
+    }
+  },
+  "medical_generation": {
+    "enabled": true,
+    "base_date": "2026-07-01",
+    "guarantee_scenarios": true,
+    "include_policy_coverage_labels": true,
+    "include_document_understanding_metadata": true
   }
 }

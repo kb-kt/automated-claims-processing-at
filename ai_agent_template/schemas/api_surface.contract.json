@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_version": "1.0.0",
+  "openapi_version": "3.1.0",
+  "canonical_review_response_fields": [
+    "claim_id",
+    "review_status",
+    "status",
+    "output",
+    "agent_output",
+    "errors"
+  ],
+  "required_operations": [
+    {"method": "POST", "path": "/claims"},
+    {"method": "GET", "path": "/claims"},
+    {"method": "GET", "path": "/claims/{claim_id}"},
+    {"method": "POST", "path": "/claims/{claim_id}/documents"},
+    {"method": "GET", "path": "/products"},
+    {"method": "GET", "path": "/products/{product_id}"},
+    {"method": "GET", "path": "/products/{product_id}/policies"},
+    {"method": "POST", "path": "/reviews"},
+    {"method": "GET", "path": "/reviews/queue"},
+    {"method": "GET", "path": "/reviews/{claim_id}"},
+    {"method": "POST", "path": "/reviews/{claim_id}/rerun"},
+    {"method": "POST", "path": "/reviews/{claim_id}/actions"},
+    {"method": "GET", "path": "/reviews/{claim_id}/actions"},
+    {"method": "GET", "path": "/reviews/{claim_id}/specialist-reports"},
+    {"method": "GET", "path": "/reviews/{claim_id}/audit-logs"},
+    {"method": "POST", "path": "/evaluations/runs"},
+    {"method": "GET", "path": "/evaluations/runs/{run_id}"},
+    {"method": "GET", "path": "/internal/v1/fraud-context/claims/{claim_id}"},
+    {"method": "GET", "path": "/internal/v1/claims/{claim_id}/documents"},
+    {"method": "GET", "path": "/internal/v1/documents/{document_id}/content"},
+    {"method": "GET", "path": "/health"},
+    {"method": "GET", "path": "/ready"}
+  ]
+}

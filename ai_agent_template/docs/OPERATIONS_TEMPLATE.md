@@ -1,5 +1,7 @@
 # Operations Template Guide
 
+The executable operational baseline and incident procedures are maintained in `docs/OPERATIONS_RUNBOOK.md`.
+
 Version: 1.0.0
 
 This document describes how MVP developers should use the Template artifacts.

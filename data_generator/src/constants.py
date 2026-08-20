@@ -3,9 +3,11 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parents[1]
 SAMPLES_DIR = BASE_DIR / "samples"
 GENERATED_DIR = BASE_DIR / "generated"
+CATALOG_DIR = BASE_DIR / "catalog"
 
 DEFAULT_CONFIG_PATH = SAMPLES_DIR / "generation_config.sample.json"
 DEFAULT_PRODUCT_PATH = SAMPLES_DIR / "products.json"
+DEFAULT_PRODUCT_CATALOG_PATH = CATALOG_DIR / "products" / "product_catalog.json"
 DEFAULT_POLICY_DOC_PATH = SAMPLES_DIR / "policy_documents.md"
 DEFAULT_EVALUATION_CASES_PATH = SAMPLES_DIR / "evaluation_cases_sample.jsonl"
 

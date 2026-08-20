@@ -81,6 +81,24 @@
       font-weight: 400;
       line-height: 1.25;
     }
+    .preset-group-title {
+      margin: 4px 0 0;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .scenario-btn.fraud { border-left: 3px solid var(--warn); }
+    .seed-note {
+      padding: 9px;
+      border: 1px solid #f0d08a;
+      border-radius: 6px;
+      background: var(--warn-soft);
+      color: var(--warn);
+      font-size: 12px;
+      line-height: 1.4;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -187,6 +205,9 @@
       <div class="head"><h2>Scenario Presets</h2></div>
       <div class="body">
         <div class="scenario-list" id="scenarioList"></div>
+        <div class="preset-group-title">Fraud Check Evidence Presets</div>
+        <div class="seed-note">These presets preserve generated claim IDs so Fraud_Check can retrieve seeded history, fingerprints, and PDFs.</div>
+        <div class="scenario-list" id="fraudPresetList"></div>
         <span class="message" id="scenarioMessage"></span>
       </div>
     </section>
@@ -199,8 +220,9 @@
       <div class="body">
         <div class="grid">
           <label>Claim ID<input id="claim_id"></label>
-          <label>Policy ID<input id="policy_id"></label>
-          <label>Product ID<input id="product_id"></label>
+          <label>Policy ID<input id="policy_id" list="policyOptions"><datalist id="policyOptions"></datalist></label>
+          <label>Product ID<input id="product_id" list="productOptions"><datalist id="productOptions"></datalist></label>
+          <label class="full">Product Name<input id="product_name" readonly></label>
           <label>Scenario Type<input id="scenario_type"></label>
           <label>Insured ID<input id="insured_id"></label>
           <label>Age at Service<input id="age_at_service" type="number"></label>
@@ -274,13 +296,23 @@
       "suspected_duplicate_receipt","documents"
     ];
     let scenarios = [];
+    let fraudPresets = [];
     let selectedScenario = null;
     let currentClaim = null;
+    let products = [];
 
     async function requestJson(url, options = {}) {
       const response = await fetch(url, options);
-      const body = await response.json();
-      if (!response.ok) throw new Error(JSON.stringify(body.detail || body));
+      const text = await response.text();
+      let body = null;
+      try { body = text ? JSON.parse(text) : {}; } catch (_) { body = null; }
+      if (!response.ok) {
+        const error = body?.error || body?.detail?.error;
+        const message = error?.message || (typeof body?.detail === "string" ? body.detail : "") || text || `HTTP ${response.status}`;
+        const requestId = error?.request_id || response.headers.get("X-Request-ID");
+        throw new Error(`${error?.code ? `${error.code}: ` : ""}${message}${requestId ? ` [${requestId}]` : ""}`);
+      }
+      if (body === null) throw new Error(`INVALID_JSON_RESPONSE: HTTP ${response.status}`);
       return body;
     }
 
@@ -292,7 +324,6 @@
       const next = clone(claim);
       const stamp = String(Date.now()).slice(-6);
       next.claim_id = `${claim.claim_id}-${stamp}`;
-      next.policy_id = `${claim.policy_id}-${stamp}`;
       next.claim.receipt_id = `${claim.claim.receipt_id}-${stamp}`;
       next.claim.receipt_hash = `${claim.claim.receipt_hash || claim.claim.receipt_id}-${stamp}`;
       if (next.claim_history.prior_receipt_ids.length) {
@@ -305,11 +336,15 @@
     }
 
     function renderScenarioList() {
-      const list = $("scenarioList");
+      renderScenarioButtons($("scenarioList"), scenarios, false);
+      renderScenarioButtons($("fraudPresetList"), fraudPresets, true);
+    }
+
+    function renderScenarioButtons(list, items, fraud) {
       list.innerHTML = "";
-      scenarios.forEach((scenario) => {
+      items.forEach((scenario) => {
         const button = document.createElement("button");
-        button.className = "scenario-btn";
+        button.className = `scenario-btn${fraud ? " fraud" : ""}`;
         button.dataset.scenarioId = scenario.id;
         button.innerHTML = `<span>${scenario.name}</span><small>${scenario.summary}</small>`;
         button.addEventListener("click", () => selectScenario(scenario.id));
@@ -318,9 +353,11 @@
     }
 
     function selectScenario(id) {
-      selectedScenario = scenarios.find((scenario) => scenario.id === id);
+      selectedScenario = [...scenarios, ...fraudPresets].find((scenario) => scenario.id === id);
       if (!selectedScenario) return;
-      currentClaim = uniqueClaim(selectedScenario.claim);
+      currentClaim = selectedScenario.preserve_claim_id
+        ? clone(selectedScenario.claim)
+        : uniqueClaim(selectedScenario.claim);
       document.querySelectorAll(".scenario-btn").forEach((button) => {
         button.classList.toggle("active", button.dataset.scenarioId === id);
       });
@@ -329,12 +366,19 @@
       syncJson();
       renderExpected();
       clearActual();
+      if (selectedScenario.requires_fraud_context_seed) {
+        $("scenarioMessage").textContent = `${currentClaim.claim_id}: submit this fixed ID before Run Review. Fraud context seed is required.`;
+        $("scenarioMessage").className = "message";
+      } else {
+        $("scenarioMessage").textContent = "";
+      }
     }
 
     function fillForm(claim) {
       $("claim_id").value = claim.claim_id;
       $("policy_id").value = claim.policy_id;
       $("product_id").value = claim.product_id;
+      loadPolicies(claim.policy_id);
       $("scenario_type").value = claim.scenario_type;
       $("insured_id").value = claim.insured_profile.insured_id;
       $("age_at_service").value = claim.insured_profile.age_at_service;
@@ -353,6 +397,37 @@
       $("same_provider_claims_30d").value = claim.claim_history.same_provider_claims_30d;
       $("suspected_duplicate_receipt").value = claim.signals.suspected_duplicate_receipt ? "true" : "false";
       $("documents").value = claim.documents.join("\n");
+    }
+
+    function renderProductName() {
+      const product = products.find((item) => item.product_id === $("product_id").value.trim());
+      $("product_name").value = product?.product_name || "Unknown or manually entered Product ID";
+    }
+
+    async function loadPolicies(preferredPolicyId = "") {
+      renderProductName();
+      const productId = $("product_id").value.trim();
+      if (!productId || !products.some((item) => item.product_id === productId)) {
+        $("policyOptions").innerHTML = "";
+        return;
+      }
+      try {
+        const data = await requestJson(`/products/${encodeURIComponent(productId)}/policies`);
+        const baselinePolicies = data.policies.filter((policy) => policy.source === "catalog_baseline");
+        const options = baselinePolicies.length ? baselinePolicies : data.policies;
+        $("policyOptions").innerHTML = options.map((policy) =>
+          `<option value="${policy.policy_id}">${policy.status}</option>`
+        ).join("");
+        const candidate = preferredPolicyId || $("policy_id").value.trim();
+        if (data.policies.some((policy) => policy.policy_id === candidate)) {
+          $("policy_id").value = candidate;
+        } else if (options.length) {
+          $("policy_id").value = options[0].policy_id;
+        }
+      } catch (error) {
+        $("actionMessage").textContent = error.message;
+        $("actionMessage").className = "message error";
+      }
     }
 
     function claimFromForm() {
@@ -433,7 +508,11 @@
 
     function renderExpected() {
       if (!selectedScenario) return;
-      $("expectedDecision").textContent = selectedScenario.expected_decision;
+      $("expectedDecision").textContent = selectedScenario.category === "fraud_check"
+        ? `${selectedScenario.expected_fraud_routing} / fraud=${selectedScenario.expected_fraud_suspected}`
+        : selectedScenario.expected_runtime_decision === selectedScenario.expected_decision
+          ? selectedScenario.expected_decision
+          : `${selectedScenario.expected_decision} (scenario) / ${selectedScenario.expected_runtime_decision} (runtime)`;
       $("scenarioSummary").textContent = selectedScenario.summary;
       const list = $("verificationPoints");
       list.innerHTML = "";
@@ -454,7 +533,12 @@
 
     function renderReview(result) {
       const output = result.output || result;
-      const matches = selectedScenario && output.recommended_decision === selectedScenario.expected_decision;
+      const matches = selectedScenario && (
+        selectedScenario.category === "fraud_check"
+          ? output.fraud_suspected === selectedScenario.expected_fraud_suspected
+            && (selectedScenario.expected_fraud_routing !== "human_review" || output.recommended_decision === "human_review")
+          : output.recommended_decision === selectedScenario.expected_runtime_decision
+      );
       $("compareBox").className = matches ? "compare match" : "compare";
       $("compareStatus").textContent = matches ? "Expected matched" : "Review completed";
       $("actualDecision").textContent = output.recommended_decision;
@@ -548,8 +632,17 @@
 
     async function init() {
       try {
-        const data = await requestJson("/demo/scenarios");
+        const [data, fraudData, productData] = await Promise.all([
+          requestJson("/demo/scenarios"),
+          requestJson("/demo/fraud-presets"),
+          requestJson("/products")
+        ]);
         scenarios = data.scenarios;
+        fraudPresets = fraudData.scenarios;
+        products = productData.products;
+        $("productOptions").innerHTML = products.map((product) =>
+          `<option value="${product.product_id}">${product.product_name}</option>`
+        ).join("");
         renderScenarioList();
         selectScenario(scenarios[0].id);
       } catch (error) {
@@ -559,6 +652,8 @@
     }
 
     fields.forEach((id) => $(id).addEventListener("input", syncJson));
+    $("product_id").addEventListener("change", () => loadPolicies());
+    $("product_id").addEventListener("input", () => loadPolicies());
     document.querySelectorAll("[data-mutation]").forEach((button) => {
       button.addEventListener("click", () => mutate(button.dataset.mutation));
     });

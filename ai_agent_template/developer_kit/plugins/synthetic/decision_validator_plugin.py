@@ -10,7 +10,7 @@ from .base import SyntheticToolPlugin
 class SyntheticDecisionValidatorPlugin(SyntheticToolPlugin):
     name = "decision_validator"
     contract_name = "decision_validator"
-    failure_policy = "fail"
+    failure_policy = "human_review"
 
     def run(self, payload: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
         agent_output = payload.get("agent_output", {})
@@ -34,4 +34,3 @@ def _validate_output_invariants(output: dict[str, Any]) -> list[str]:
     if output.get("recommended_decision") == "request_documents" and not output.get("missing_documents"):
         errors.append("request_documents requires missing_documents")
     return errors
-

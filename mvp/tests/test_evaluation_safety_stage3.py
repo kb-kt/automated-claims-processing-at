@@ -7,6 +7,7 @@ import unittest
 from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
+from unittest.mock import patch
 
 from ai_agent_template.developer_kit.sdk.claim_agent_sdk import StandardsRegistry
 
@@ -16,6 +17,7 @@ from mvp.app.core.review_service import ReviewService
 from mvp.app.core.settings import Settings
 from mvp.app.core.template_runtime import TemplateRuntime
 from mvp.app.db.sqlite import SQLiteRepository
+from test_support.fraud_check_server import unused_local_url
 
 
 WORKSPACE = Path(__file__).resolve().parents[2]
@@ -43,6 +45,11 @@ class EvaluationSafetyStage3Test(unittest.TestCase):
         self.assertTrue(result["labels_path_redacted"])
         self.assertIn("decision_accuracy", result["metrics"])
         self.assertIn("false_payment_rate", result["metrics"])
+        self.assertIn("document_field_label_accuracy", result["metrics"])
+        self.assertIn("kcd_mapping_accuracy", result["metrics"])
+        self.assertIn("edi_mapping_accuracy", result["metrics"])
+        self.assertIn("medical_causality_routing_accuracy", result["metrics"])
+        self.assertIn("citation_requirement_pass_rate", result["metrics"])
         self.assertEqual(stored["run_id"], result["run_id"])
         self.assertNotIn("labels_path", result)
         self.assertTrue(output_rows)
@@ -89,6 +96,47 @@ class EvaluationSafetyStage3Test(unittest.TestCase):
         self.assertTrue(output["requires_human_review"])
         self.assertTrue(output["fraud_suspected"])
         self.assertIn("DUPLICATE_RECEIPT_SUSPECTED", output["reason_codes"])
+
+    def test_remote_fraud_check_down_fail_closes_to_human_review(self) -> None:
+        claim = copy.deepcopy(_read_first_jsonl(CLAIMS_EVAL))
+        claim["claim_id"] = "MVP-FRAUD-CHECK-DOWN-001"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch.dict(
+                "os.environ",
+                {
+                    "FRAUD_CHECK_URL": unused_local_url(),
+                    "CLAIM_MVP_PLUGIN_CONFIG": str(MVP_ROOT / "config" / "plugins.remote.yaml"),
+                },
+            ):
+                settings = _settings(Path(temp_dir))
+                repo = _repo(Path(temp_dir), settings.sqlite_path)
+                runtime = TemplateRuntime.build(settings)
+                output = ReviewService(repository=repo, runtime=runtime).run_review(
+                    claim_payload=claim,
+                )["output"]
+
+        self.assertEqual(output["recommended_decision"], "human_review")
+        self.assertTrue(output["requires_human_review"])
+        self.assertFalse(output["fraud_suspected"])
+        self.assertIn("TOOL_FAILURE", output["reason_codes"])
+
+    def test_medical_registry_failure_fail_closes_to_human_review(self) -> None:
+        claim = copy.deepcopy(_read_first_jsonl(CLAIMS_EVAL))
+        claim["claim_id"] = "MVP-REGISTRY-FAIL-CLOSED-001"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            settings = _settings(Path(temp_dir))
+            repo = _repo(Path(temp_dir), settings.sqlite_path)
+            runtime = TemplateRuntime.build(settings)
+            with patch(
+                "mvp.app.core.review_service.RuntimeMedicalRegistryService.enrich_claim_payload",
+                side_effect=RuntimeError("registry unavailable"),
+            ):
+                output = ReviewService(repository=repo, runtime=runtime).run_review(
+                    claim_payload=claim,
+                )["output"]
+        self.assertEqual(output["recommended_decision"], "human_review")
+        self.assertTrue(output["requires_human_review"])
+        self.assertIn("TOOL_FAILURE", output["reason_codes"])
 
     def test_retrieval_fallback_without_keyword_retriever_still_returns_policy_basis(self) -> None:
         claim = copy.deepcopy(_read_first_jsonl(CLAIMS_EVAL))

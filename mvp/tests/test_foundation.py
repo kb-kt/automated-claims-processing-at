@@ -25,8 +25,11 @@ class MvpFoundationTest(unittest.TestCase):
         self.assertEqual(settings.app_name, "insurance-claims-review-mvp")
         self.assertTrue(settings.template_root.exists())
         self.assertTrue(settings.plugin_config_path.exists())
+        self.assertTrue(settings.specialist_config_path.exists())
         self.assertTrue(settings.model_config_path.exists())
         self.assertTrue(settings.demo_scenarios_path.exists())
+        self.assertTrue(settings.fraud_generated_dir.exists())
+        self.assertEqual(settings.max_document_bytes, 10000000)
         self.assertEqual(settings.retrieval_mode, "keyword")
         self.assertEqual(settings.retrieval_top_k, 3)
 
@@ -55,6 +58,17 @@ class MvpFoundationTest(unittest.TestCase):
         )
         self.assertEqual(readiness["model_provider"], "general_llm")
         self.assertEqual(readiness["model_id"], "gemma-4-26B-4aB-it")
+        self.assertIn("document_extraction", readiness)
+        self.assertFalse(readiness["document_extraction"]["vlm_enabled"])
+        self.assertEqual(
+            readiness["specialist_agents"],
+            [
+                "policy_coverage_analysis",
+                "document_understanding",
+                "medical_review_causality",
+                "fraud_risk_analysis",
+            ],
+        )
         self.assertTrue(readiness["policy_knowledge"]["retriever_available"])
 
     def test_policy_knowledge_retrieval_result_matches_template_schema(self) -> None:
@@ -80,9 +94,29 @@ class MvpFoundationTest(unittest.TestCase):
         claim = _read_first_jsonl(WORKSPACE / "data_generator" / "generated" / "claims_eval.jsonl")
         with tempfile.TemporaryDirectory() as temp_dir:
             repo = _repo(Path(temp_dir))
-            self.assertEqual(repo.applied_migrations(), ["001_initial", "002_audit_logs"])
+            self.assertEqual(
+                repo.applied_migrations(),
+                [
+                    "001_initial",
+                    "002_audit_logs",
+                    "003_fraud_context_documents",
+                    "004_medical_registry_specialist_agents",
+                    "005_medical_routing_rules",
+                    "006_customer_document_uploads",
+                ],
+            )
             repo.initialize()
-            self.assertEqual(repo.applied_migrations(), ["001_initial", "002_audit_logs"])
+            self.assertEqual(
+                repo.applied_migrations(),
+                [
+                    "001_initial",
+                    "002_audit_logs",
+                    "003_fraud_context_documents",
+                    "004_medical_registry_specialist_agents",
+                    "005_medical_routing_rules",
+                    "006_customer_document_uploads",
+                ],
+            )
             repo.save_claim(claim)
             self.assertEqual(repo.get_claim(claim["claim_id"])["claim_id"], claim["claim_id"])
             claim_summaries = repo.list_claims(limit=10)
@@ -127,6 +161,38 @@ class MvpFoundationTest(unittest.TestCase):
             self.assertEqual(stored_eval["metrics"]["schema_validity"], 1.0)
             self.assertTrue(stored_eval["passed"])
 
+    def test_sqlite_repository_seeds_medical_registry(self) -> None:
+        generated_dir = WORKSPACE / "data_generator" / "generated"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo = _repo(Path(temp_dir))
+            result = repo.seed_medical_registry(
+                medical_code_registry=_read_json(generated_dir / "medical_code_registry.json"),
+                edi_code_registry=_read_json(generated_dir / "edi_code_registry.json"),
+                diagnosis_treatment_rules=_read_json(generated_dir / "diagnosis_treatment_rules.json"),
+                insurer_medical_routing_rules=_read_json(generated_dir / "insurer_medical_routing_rules.json"),
+                source_files=[
+                    str(generated_dir / "medical_code_registry.json"),
+                    str(generated_dir / "edi_code_registry.json"),
+                    str(generated_dir / "diagnosis_treatment_rules.json"),
+                    str(generated_dir / "insurer_medical_routing_rules.json"),
+                ],
+            )
+            self.assertGreaterEqual(result["row_count"], 1)
+            self.assertIsNotNone(repo.get_medical_code("SYN-M54"))
+            self.assertIsNotNone(repo.get_procedure_code("TRT-NONCOV-001"))
+            self.assertIsNotNone(repo.find_diagnosis_treatment_rule("M54.5", "EDI-MM010"))
+            self.assertEqual(
+                repo.get_medical_routing_rule("SYN-MED-ROUTE-AMBIGUOUS-CODE")["routing"],
+                "human_review",
+            )
+            self.assertEqual(
+                repo.find_medical_routing_rule(
+                    reason_code="DIAGNOSIS_TREATMENT_COMPATIBLE",
+                    routing="continue_claim_review",
+                )["rule_id"],
+                "SYN-MED-ROUTE-CONTINUE",
+            )
+
     @unittest.skipUnless(importlib.util.find_spec("fastapi"), "FastAPI is not installed")
     def test_fastapi_app_factory_when_dependency_available(self) -> None:
         from mvp.app.main import create_app
@@ -146,6 +212,11 @@ def _repo(temp_dir: Path) -> SQLiteRepository:
 def _read_first_jsonl(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as file:
         return json.loads(next(line for line in file if line.strip()))
+
+
+def _read_json(path: Path) -> list[dict]:
+    with path.open("r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 if __name__ == "__main__":

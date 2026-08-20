@@ -17,6 +17,8 @@ class GenerationConfig:
     claim_type_distribution: dict[str, float]
     amount_ranges: dict[str, dict[str, int]]
     split_policy: dict[str, Any] = field(default_factory=dict)
+    fraud_generation: dict[str, Any] = field(default_factory=dict)
+    medical_generation: dict[str, Any] = field(default_factory=dict)
     locale: str = "ko-KR"
     currency: str = "KRW"
 

@@ -20,9 +20,17 @@ class Settings:
     labels_dev_path: Path
     claims_eval_path: Path
     labels_eval_path: Path
+    document_extraction_labels_eval_path: Path
+    code_mapping_labels_eval_path: Path
+    medical_labels_eval_path: Path
+    policy_coverage_labels_eval_path: Path
     sqlite_path: Path
     reports_dir: Path
+    fraud_generated_dir: Path
+    uploaded_documents_dir: Path
+    max_document_bytes: int
     plugin_config_path: Path
+    specialist_config_path: Path
     model_config_path: Path
     demo_scenarios_path: Path
     retrieval_enabled: bool
@@ -30,6 +38,10 @@ class Settings:
     retrieval_top_k: int
     fail_closed: bool
     low_confidence_threshold: float
+    auth_enabled: bool = False
+    customer_api_key: str = ""
+    reviewer_api_key: str = ""
+    admin_api_key: str = ""
 
     @classmethod
     def load(cls, config_path: str | Path | None = None) -> "Settings":
@@ -58,8 +70,24 @@ class Settings:
             os.environ.get("CLAIM_MVP_REPORTS_DIR") or paths.get("reports_dir", "runtime/reports"),
             mvp_root,
         )
+        fraud_generated_dir = _path(
+            os.environ.get("CLAIM_MVP_FRAUD_GENERATED_DIR")
+            or paths.get("fraud_generated_dir", "../data_generator/generated"),
+            mvp_root,
+        )
+        uploaded_documents_dir = _path(
+            os.environ.get("CLAIM_MVP_DOCUMENT_STORAGE_DIR")
+            or paths.get("uploaded_documents_dir", "runtime/documents"),
+            mvp_root,
+        )
+        max_document_bytes = int(os.environ.get("CLAIMS_INTERNAL_MAX_DOCUMENT_BYTES", "10000000"))
         plugin_config_path = _path(
             os.environ.get("CLAIM_MVP_PLUGIN_CONFIG") or mvp_root / "config" / "plugins.yaml",
+            mvp_root,
+        )
+        specialist_config_path = _path(
+            os.environ.get("CLAIM_MVP_SPECIALIST_PLUGIN_CONFIG")
+            or paths.get("specialist_plugins", "config/specialist_plugins.synthetic_insurer.yaml"),
             mvp_root,
         )
         model_config_path = _path(
@@ -92,9 +120,29 @@ class Settings:
             labels_dev_path=_path(paths.get("labels_dev", "../data_generator/generated/labels_dev.jsonl"), mvp_root),
             claims_eval_path=_path(paths.get("claims_eval", "../data_generator/generated/claims_eval.jsonl"), mvp_root),
             labels_eval_path=_path(paths.get("labels_eval", "../data_generator/generated/labels_eval.jsonl"), mvp_root),
+            document_extraction_labels_eval_path=_path(
+                paths.get("document_extraction_labels_eval", "../data_generator/generated/document_extraction_labels_eval.jsonl"),
+                mvp_root,
+            ),
+            code_mapping_labels_eval_path=_path(
+                paths.get("code_mapping_labels_eval", "../data_generator/generated/code_mapping_labels_eval.jsonl"),
+                mvp_root,
+            ),
+            medical_labels_eval_path=_path(
+                paths.get("medical_labels_eval", "../data_generator/generated/medical_labels_eval.jsonl"),
+                mvp_root,
+            ),
+            policy_coverage_labels_eval_path=_path(
+                paths.get("policy_coverage_labels_eval", "../data_generator/generated/policy_coverage_labels_eval.jsonl"),
+                mvp_root,
+            ),
             sqlite_path=sqlite_path,
             reports_dir=reports_dir,
+            fraud_generated_dir=fraud_generated_dir,
+            uploaded_documents_dir=uploaded_documents_dir,
+            max_document_bytes=max_document_bytes,
             plugin_config_path=plugin_config_path,
+            specialist_config_path=specialist_config_path,
             model_config_path=model_config_path,
             demo_scenarios_path=demo_scenarios_path,
             retrieval_enabled=retrieval_enabled,
@@ -102,6 +150,10 @@ class Settings:
             retrieval_top_k=retrieval_top_k,
             fail_closed=_bool(workflow.get("fail_closed"), default=True),
             low_confidence_threshold=float(workflow.get("low_confidence_threshold", 0.75)),
+            auth_enabled=_bool(os.environ.get("CLAIM_MVP_AUTH_ENABLED"), default=False),
+            customer_api_key=os.environ.get("CLAIM_MVP_CUSTOMER_API_KEY", ""),
+            reviewer_api_key=os.environ.get("CLAIM_MVP_REVIEWER_API_KEY", ""),
+            admin_api_key=os.environ.get("CLAIM_MVP_ADMIN_API_KEY", ""),
         )
 
 

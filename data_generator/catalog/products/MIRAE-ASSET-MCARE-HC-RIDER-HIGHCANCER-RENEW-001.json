@@ -1,0 +1,131 @@
+{
+  "product_id": "MIRAE-ASSET-MCARE-HC-RIDER-HIGHCANCER-RENEW-001",
+  "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_고액암진단특약(갱신형) 무배당",
+  "product_type": "real_insurance_product",
+  "version": "갱신형",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "미래에셋 M-케어 건강보험 무배당 기본형의 고액암진단특약(갱신형) 무배당 상품으로, 갱신형 정기 암 진단 특약입니다.",
+  "coverages": [
+    {
+      "coverage_code": "COV_HIGH_CANCER_DIAGNOSIS",
+      "name": "고액암 진단 특약",
+      "care_setting": "diagnosis",
+      "benefit_category": "cancer",
+      "limit_per_claim": 100000000,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0,
+        "fixed_amount": 0
+      },
+      "required_documents": [
+        "claim_form",
+        "diagnosis_certificate"
+      ],
+      "source_fields": {
+        "product_name": "고액암진단특약(갱신형) 무배당",
+        "product_type": "암",
+        "rider_type": "진단",
+        "renewable_type": "갱신형",
+        "insured_amount": "1억원"
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "계약자, 피보험자, 수익자의 고의"
+    },
+    {
+      "code": "EXC_BEFORE_COVERAGE_START",
+      "name": "보장개시일 이전 사고 또는 진단"
+    },
+    {
+      "code": "EXC_PRE_EXISTING_CONDITION",
+      "name": "기왕증 관련 진단 및 사고"
+    },
+    {
+      "code": "EXC_FRAUDULENT_DOCUMENT",
+      "name": "허위 또는 위조 서류 제출"
+    },
+    {
+      "code": "EXC_NON_DISCLOSED_RISK",
+      "name": "고지의무 위반 또는 위험기재 누락"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_MISSING_BENEFIT_DEFINITION",
+      "condition": "보험금 지급 조건 및 한도 정보 불명확"
+    },
+    {
+      "code": "HR_RENEWAL_UNCERTAINTY",
+      "condition": "갱신형 상품으로 심사 또는 갱신 조건 검토 필요"
+    },
+    {
+      "code": "HR_AGE_ELIGIBILITY_BOUNDARY",
+      "condition": "피보험자 나이가 만15세 미만 또는 75세 초과 여부 확인"
+    },
+    {
+      "code": "HR_DOCUMENT_MISMATCH",
+      "condition": "진단서 등 제출서류와 청구 내용 불일치"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_06.암/보험_06_미래에셋 M-케어 건강보험 무배당 [기본형]_고액암진단특약(갱신형) 무배당.json"
+  },
+  "extraction_warnings": [
+    "effective_date unknown, set to 2000-01-01 as fallback",
+    "deductible not specified, assumed no deductible with rate 0.0",
+    "required_documents partially inferred, only claim_form and diagnosis_certificate included",
+    "no explicit monetary limits beyond insured_amount '1억원'",
+    "exclusions limited to disclosed intentional acts and common exclusions due to missing explicit source details"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_id",
+      "source_field": "product_name, rider_type, renewable_type",
+      "source_value": "고액암진단특약(갱신형) 무배당, 진단, 갱신형",
+      "confidence": "high"
+    },
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "미래에셋 M-케어 건강보험 무배당 [기본형]_고액암진단특약(갱신형) 무배당",
+      "confidence": "high"
+    },
+    {
+      "field": "products.version",
+      "source_field": "renewable_type",
+      "source_value": "갱신형",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].limit_per_claim",
+      "source_field": "insured_amount",
+      "source_value": "1억원",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0].name",
+      "source_field": "exclusion_items",
+      "source_value": "계약자, 피보험자, 수익자의 고의",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].required_documents",
+      "source_field": "rider_type",
+      "source_value": "진단",
+      "confidence": "medium"
+    }
+  ]
+}

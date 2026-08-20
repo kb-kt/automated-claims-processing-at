@@ -1,0 +1,54 @@
+{
+  "tool_name": "document_understanding",
+  "version": "1.0.0",
+  "description": "Extract structured fields from medical documents through text/OCR/VLM providers.",
+  "input_schema": {
+    "type": "object",
+    "required": ["claim_id", "document_refs"],
+    "additionalProperties": false,
+    "properties": {
+      "claim_id": { "type": "string" },
+      "document_refs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["document_id", "document_type"],
+          "properties": {
+            "document_id": { "type": "string" },
+            "document_type": { "type": "string" },
+            "content_hash": { "type": "string" },
+            "mime_type": { "type": "string" }
+          }
+        }
+      },
+      "provider": { "type": "string", "enum": ["ocr_text", "text_pdf", "document_vlm"] }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["report", "documents"],
+    "additionalProperties": false,
+    "properties": {
+      "report": { "$ref": "../../schemas/agent_report.schema.json" },
+      "documents": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["document_id", "document_type", "extraction_mode", "extraction_status", "extraction_confidence_bucket"],
+          "properties": {
+            "document_id": { "type": "string" },
+            "document_type": { "type": "string" },
+            "extraction_mode": { "type": "string", "enum": ["text_pdf", "ocr_text", "scan_image", "vlm_required", "document_vlm"] },
+            "extraction_status": { "type": "string", "enum": ["extracted", "failed", "partial"] },
+            "extraction_confidence_bucket": { "type": "string", "enum": ["high", "medium", "low"] },
+            "extracted_fields": { "type": "object" },
+            "field_statuses": { "type": "object" }
+          }
+        }
+      }
+    }
+  },
+  "timeout_ms": 15000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

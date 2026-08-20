@@ -33,6 +33,20 @@ if router is not None:
         except MvpError as exc:
             raise_http_error(exc)
 
+    @router.get("/fraud-presets")
+    def list_fraud_presets(request: Request) -> dict[str, Any]:
+        try:
+            return _service(request).list_fraud_presets()
+        except MvpError as exc:
+            raise_http_error(exc)
+
+    @router.get("/fraud-presets/{preset_id}")
+    def get_fraud_preset(preset_id: str, request: Request) -> dict[str, Any]:
+        try:
+            return _service(request).get_fraud_preset(preset_id)
+        except MvpError as exc:
+            raise_http_error(exc)
+
 
 def _service(request: Request) -> DemoScenarioService:
     container = request.app.state.container

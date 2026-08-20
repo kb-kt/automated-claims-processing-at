@@ -25,6 +25,6 @@
     }
   },
   "timeout_ms": 3000,
-  "failure_policy": "fail",
+  "failure_policy": "human_review",
   "owner": "claim-review-template"
 }

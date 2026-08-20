@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "usage": "synthetic_development_and_evaluation_only",
+  "products": [
+    {
+      "product_id": "ABL-NPR-VUL-1801-PRIMARY",
+      "product_name": "ABL 무배당 뉴파워리턴변액유니버셜보험 1801_주계약",
+      "product_type": "real_insurance_product",
+      "version": "1801",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "ABL-NPR-VUL-1801-PRIMARY.json"
+    },
+    {
+      "product_id": "ABL-UNIV-HLTH-LIFE-2301",
+      "product_name": "ABL 무배당 더나은변액유니버셜통합건강종신보험 2301 _주계약",
+      "product_type": "real_insurance_product",
+      "version": "2301",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "ABL-UNIV-HLTH-LIFE-2301.json"
+    },
+    {
+      "product_id": "ABL-UNIV-LIFE-2501-RDR_SURGERY",
+      "product_name": "AtoZ 무배당 ABL유니버셜종신보험(보증비용부과형)(Az금융GA전용) 2501_ 무배당 수술보장특약 (선택특약)",
+      "product_type": "real_insurance_product",
+      "version": "2501",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "ABL-UNIV-LIFE-2501-RDR_SURGERY.json"
+    },
+    {
+      "product_id": "ABL_ATOZ_UNIVERSAL_LIFE_CANCER_HOSPITALIZATION_RIDER_III_renewable",
+      "product_name": "AtoZ 무배당 ABL유니버셜종신보험(보증비용부과형)(Az금융GA전용) 2501_간편가입암직접치료입원보장특약Ⅲ(갱신형) (선택특약)",
+      "product_type": "real_insurance_product",
+      "version": "2501",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "ABL_ATOZ_UNIVERSAL_LIFE_CANCER_HOSPITALIZATION_RIDER_III_renewable.json"
+    },
+    {
+      "product_id": "HGBL-ANSIMCARE2504-1",
+      "product_name": "무배당 흥국생명 안심케어보험2504_1형(치매보장형)",
+      "product_type": "real_insurance_product",
+      "version": "1.0.0",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "HGBL-ANSIMCARE2504-1.json"
+    },
+    {
+      "product_id": "HKG_LIFE_ANSIMCARE2504_2_TYPE_DISABILITY",
+      "product_name": "무배당 흥국생명 안심케어보험2504_2형(장해보장형)",
+      "product_type": "real_insurance_product",
+      "version": "1.0",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "HKG_LIFE_ANSIMCARE2504_2_TYPE_DISABILITY.json"
+    },
+    {
+      "product_id": "KB_LIFEPARTNER_TERMRIDER1",
+      "product_name": "KB 라이프 파트너 종신보험 무배당(해약환급금 일부지급형)_무배당 정기특약Ⅰ",
+      "product_type": "real_insurance_product",
+      "version": "unknown",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "KB_LIFEPARTNER_TERMRIDER1.json"
+    },
+    {
+      "product_id": "KB_LIFE_PARTNER_FAMILY_INCOME_RIDER",
+      "product_name": "KB 라이프 파트너 종신보험 무배당(해약환급금 일부지급형)_무배당 가족수입특약",
+      "product_type": "real_insurance_product",
+      "version": "unknown",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "KB_LIFE_PARTNER_FAMILY_INCOME_RIDER.json"
+    },
+    {
+      "product_id": "MIRAE-ASSET-MCARE-HC-RIDER-HIGHCANCER-RENEW-001",
+      "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_고액암진단특약(갱신형) 무배당",
+      "product_type": "real_insurance_product",
+      "version": "갱신형",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "MIRAE-ASSET-MCARE-HC-RIDER-HIGHCANCER-RENEW-001.json"
+    },
+    {
+      "product_id": "MIRAE-M-CARE-2024-2-3ROOM-HOSP-RDR",
+      "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_2-3인실입원특약(상급종합병원)(1일이상 30일한도) [기본형]",
+      "product_type": "real_insurance_product",
+      "version": "기본형",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": true,
+      "file_path": "MIRAE-M-CARE-2024-2-3ROOM-HOSP-RDR.json"
+    },
+    {
+      "product_id": "MIRAES-CARE-CANCER_DIAGNO-RIDER-RENEW-001",
+      "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_암(유사암제외)진단특약(갱신형) 무배당",
+      "product_type": "real_insurance_product",
+      "version": "unknown",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": false,
+      "file_path": "MIRAES-CARE-CANCER_DIAGNO-RIDER-RENEW-001.json"
+    },
+    {
+      "product_id": "MIRAESET-MCARE-INPATIENT-RIDER-2024",
+      "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_2-3인실입원특약(상급종합병원)(1일이상 30일한도)(갱신형) 무배당",
+      "product_type": "real_insurance_product",
+      "version": "2024-갱신형",
+      "currency": "KRW",
+      "effective_date": "2000-01-01",
+      "coverage_count": 1,
+      "claim_generation_supported": true,
+      "file_path": "MIRAESET-MCARE-INPATIENT-RIDER-2024.json"
+    },
+    {
+      "product_id": "SYN-MED-001",
+      "product_name": "Synthetic Medical Guard 4",
+      "product_type": "synthetic_indemnity_medical",
+      "version": "1.0.0",
+      "currency": "KRW",
+      "effective_date": "2026-01-01",
+      "coverage_count": 8,
+      "claim_generation_supported": true,
+      "file_path": "SYN-MED-001.json"
+    }
+  ]
+}

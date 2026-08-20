@@ -129,6 +129,73 @@
         }
       }
     },
+    "medical_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "code_mapping_candidates",
+        "prior_medical_evidence",
+        "insurer_medical_routing_rules",
+        "synthetic"
+      ],
+      "properties": {
+        "schema_version": { "type": "string", "const": "1.0.0" },
+        "code_mapping_candidates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kcd", "edi", "ambiguous"],
+          "properties": {
+            "kcd": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/medical_code_candidate" }
+            },
+            "edi": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/medical_code_candidate" }
+            },
+            "ambiguous": { "type": "boolean" },
+            "ambiguity_reason": { "type": "string" }
+          }
+        },
+        "prior_medical_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "prior_diagnoses_180d",
+            "prior_surgeries_365d",
+            "prior_tests_180d",
+            "treatment_continuity_days",
+            "pre_existing_condition_indicators"
+          ],
+          "properties": {
+            "prior_diagnoses_180d": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/prior_diagnosis_evidence" }
+            },
+            "prior_surgeries_365d": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/prior_surgery_evidence" }
+            },
+            "prior_tests_180d": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/prior_test_evidence" }
+            },
+            "treatment_continuity_days": { "type": "integer", "minimum": 0 },
+            "pre_existing_condition_indicators": {
+              "type": "array",
+              "items": { "type": "string" },
+              "uniqueItems": true
+            }
+          }
+        },
+        "insurer_medical_routing_rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/insurer_medical_routing_rule" }
+        },
+        "synthetic": { "type": "boolean" }
+      }
+    },
     "signals": {
       "type": "object",
       "additionalProperties": false,
@@ -152,6 +219,90 @@
         "high_noncovered_ratio": { "type": "boolean" },
         "preventive_purpose": { "type": "boolean" },
         "unsupported_treatment": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "medical_code_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "confidence", "source"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "code_name": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "registry_version": { "type": "string", "minLength": 1 },
+        "evidence_document_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "prior_diagnosis_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kcd_code", "encounter_count", "last_service_date", "source"],
+      "properties": {
+        "kcd_code": { "type": "string", "minLength": 1 },
+        "encounter_count": { "type": "integer", "minimum": 0 },
+        "last_service_date": { "type": "string", "format": "date" },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "prior_surgery_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["procedure_code", "surgery_date", "source"],
+      "properties": {
+        "procedure_code": { "type": "string", "minLength": 1 },
+        "surgery_date": { "type": "string", "format": "date" },
+        "related_kcd_code": { "type": "string" },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "prior_test_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test_code", "test_date", "result_summary", "source"],
+      "properties": {
+        "test_code": { "type": "string", "minLength": 1 },
+        "test_date": { "type": "string", "format": "date" },
+        "result_summary": { "type": "string", "minLength": 1 },
+        "related_kcd_code": { "type": "string" },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "insurer_medical_routing_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule_id", "rule_version", "matched", "routing", "reason_code", "confidence"],
+      "properties": {
+        "rule_id": { "type": "string", "minLength": 1 },
+        "rule_version": { "type": "string", "minLength": 1 },
+        "matched": { "type": "boolean" },
+        "routing": {
+          "type": "string",
+          "enum": ["continue_claim_review", "request_documents", "human_review"]
+        },
+        "reason_code": { "type": "string", "minLength": 1 },
+        "additional_reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "approval_status": {
+          "type": "string",
+          "enum": ["synthetic_insurer_approved", "insurer_approved", "draft", "deprecated"]
+        },
+        "source": { "type": "string" },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
       }
     }
   },

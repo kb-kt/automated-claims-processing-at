@@ -82,6 +82,41 @@ def load_config(
         claim_type_distribution=claim_type_distribution,
         amount_ranges=dict(data.get("amount_ranges", {})),
         split_policy=dict(data.get("split_policy", {})),
+        fraud_generation=dict(data.get("fraud_generation", _default_fraud_generation())),
+        medical_generation=dict(data.get("medical_generation", _default_medical_generation())),
         locale=str(data.get("locale", "ko-KR")),
         currency=str(data.get("currency", "KRW")),
     )
+
+
+def _default_fraud_generation() -> dict[str, Any]:
+    return {
+        "enabled": True,
+        "generate_pdfs": True,
+        "scan_pdf_ratio": 0.35,
+        "corrupt_document_ratio": 0.02,
+        "base_date": "2026-07-01",
+        "history_days": 180,
+        "provider_count": 80,
+        "insured_count": 400,
+        "scenario_ratios": {
+            "normal_clean": 0.08,
+            "duplicate_receipt": 0.14,
+            "document_forgery": 0.18,
+            "repeat_pattern": 0.14,
+            "provider_pattern": 0.14,
+            "complex_fraud": 0.12,
+            "hard_negative": 0.12,
+            "document_failure": 0.08,
+        },
+    }
+
+
+def _default_medical_generation() -> dict[str, Any]:
+    return {
+        "enabled": True,
+        "base_date": "2026-07-01",
+        "guarantee_scenarios": True,
+        "include_policy_coverage_labels": True,
+        "include_document_understanding_metadata": True,
+    }

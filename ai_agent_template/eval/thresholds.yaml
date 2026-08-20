@@ -25,9 +25,42 @@ hard_thresholds:
   false_denial_rate:
     operator: "<="
     target: 0.01
+  false_payment_rate:
+    operator: "<="
+    target: 0.01
   human_review_miss_rate:
     operator: "<="
     target: 0.01
+  specialist_report_schema_validity:
+    operator: "=="
+    target: 1.0
+  document_field_label_accuracy:
+    operator: ">="
+    target: 0.95
+  low_confidence_document_human_review_recall:
+    operator: ">="
+    target: 0.98
+  kcd_mapping_accuracy:
+    operator: ">="
+    target: 0.90
+  edi_mapping_accuracy:
+    operator: ">="
+    target: 0.90
+  ambiguous_code_human_review_recall:
+    operator: ">="
+    target: 0.98
+  medical_causality_routing_accuracy:
+    operator: ">="
+    target: 0.95
+  medical_reason_code_recall:
+    operator: ">="
+    target: 0.95
+  citation_clause_recall:
+    operator: ">="
+    target: 0.95
+  citation_requirement_pass_rate:
+    operator: ">="
+    target: 0.95
 soft_thresholds:
   reason_code_overlap:
     operator: ">="
@@ -35,9 +68,6 @@ soft_thresholds:
   payable_amount_mae:
     operator: "<="
     target: 1000
-  false_payment_rate:
-    operator: "<="
-    target: 0.02
   underpayment_rate:
     operator: "<="
     target: 0.03

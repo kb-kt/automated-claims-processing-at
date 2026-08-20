@@ -1,0 +1,25 @@
+[
+  {
+    "rule_id": "INSURER-MED-ROUTE-AMBIGUOUS-CODE",
+    "rule_version": "2026.1",
+    "rule_name": "Ambiguous KCD EDI Mapping Review",
+    "description": "Route to human medical review when top candidate confidence is below insurer threshold or confidence margin is narrow.",
+    "routing": "human_review",
+    "reason_code": "AMBIGUOUS_MEDICAL_CODE_MAPPING",
+    "default_confidence": 0.86,
+    "approval_status": "insurer_approved",
+    "owner": "Example Insurer Medical Review Committee",
+    "effective_from": "2026-01-01",
+    "effective_to": null,
+    "conditions": {
+      "kcd_top_confidence_lt": 0.75,
+      "candidate_margin_lt": 0.15
+    },
+    "evidence_requirements": [
+      "diagnosis_note",
+      "medical_statement"
+    ],
+    "source_reference": "INSURER-MEDICAL-RULEBOOK-2026.1",
+    "synthetic": false
+  }
+]

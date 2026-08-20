@@ -112,9 +112,9 @@ class HostedLLMProvider:
             raise RuntimeError("Hosted model response content is not valid JSON.") from exc
 
 
-def load_model_provider_from_config(config_path: str | Path) -> ModelProvider:
+def load_model_provider_from_config(config_path: str | Path, provider_name: str | None = None) -> ModelProvider:
     config = _parse_model_yaml(Path(config_path))
-    active = config.get("active_provider", "mock")
+    active = provider_name or config.get("active_provider", "mock")
     providers = config.get("providers", {})
     active_config = providers.get(active, {})
     if active == "mock" or active_config.get("provider_type") == "mock":
@@ -128,6 +128,10 @@ def load_model_provider_from_config(config_path: str | Path) -> ModelProvider:
         response_format=active_config.get("response_format", "json_schema"),
         timeout_ms=int(active_config.get("timeout_ms", 30000) or 30000),
     )
+
+
+def load_model_provider_config(config_path: str | Path, provider_name: str) -> dict[str, Any]:
+    return dict(_parse_model_yaml(Path(config_path)).get("providers", {}).get(provider_name, {}))
 
 
 def _parse_model_yaml(path: Path) -> dict[str, Any]:
@@ -163,8 +167,8 @@ def _clean_yaml_value(value: str) -> str:
     if (value.startswith('"') and value.endswith('"')) or (
         value.startswith("'") and value.endswith("'")
     ):
-        return value[1:-1]
-    return value
+        value = value[1:-1]
+    return _resolve_env(value)
 
 
 def _resolve_env(value: str) -> str:

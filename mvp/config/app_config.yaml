@@ -12,8 +12,14 @@ paths:
   labels_dev: ../data_generator/generated/labels_dev.jsonl
   claims_eval: ../data_generator/generated/claims_eval.jsonl
   labels_eval: ../data_generator/generated/labels_eval.jsonl
+  document_extraction_labels_eval: ../data_generator/generated/document_extraction_labels_eval.jsonl
+  code_mapping_labels_eval: ../data_generator/generated/code_mapping_labels_eval.jsonl
+  medical_labels_eval: ../data_generator/generated/medical_labels_eval.jsonl
+  policy_coverage_labels_eval: ../data_generator/generated/policy_coverage_labels_eval.jsonl
   sqlite_path: runtime/mvp.sqlite3
   reports_dir: runtime/reports
+  uploaded_documents_dir: runtime/documents
+  specialist_plugins: config/specialist_plugins.synthetic_insurer.yaml
 
 workflow:
   fail_closed: true
@@ -23,4 +29,3 @@ retrieval:
   enabled: true
   mode: keyword
   top_k: 3
-

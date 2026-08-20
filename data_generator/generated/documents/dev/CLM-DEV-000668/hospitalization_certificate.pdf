@@ -1,0 +1,69 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 733 >>
+stream
+BT
+/F1 9 Tf
+50 790 Td
+(SYNTHETIC TEST DOCUMENT / ì‹¤ì œ ì‚¬ìš© ë¶ˆê°€) Tj
+0 -14 Td
+(DOCUMENT_TITLE: hospitalization_certificate CLM-DEV-000668) Tj
+0 -14 Td
+(RENDER_MODE: text) Tj
+0 -14 Td
+(claimed_amount: 116319) Tj
+0 -14 Td
+(diagnosis_code: SYN-S61) Tj
+0 -14 Td
+(document_id: DOC-SYN-DEV-004004) Tj
+0 -14 Td
+(document_type: hospitalization_certificate) Tj
+0 -14 Td
+(insured_id: INS-SYN-DEV-000668) Tj
+0 -14 Td
+(issue_date: 2026-04-02) Tj
+0 -14 Td
+(provider_id: PROV-SYN-HOSP-019) Tj
+0 -14 Td
+(provider_name: Synthetic Provider PROV-SYN-HOSP-019) Tj
+0 -14 Td
+(receipt_id: RCT-SYN-DEV-000668) Tj
+0 -14 Td
+(treatment_code: TRT-WOUND-001) Tj
+0 -14 Td
+(treatment_end_date: 2026-03-27) Tj
+0 -14 Td
+(treatment_start_date: 2026-03-27) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Title (hospitalization_certificate CLM-DEV-000668) /Subject (SYNTHETIC TEST DOCUMENT / actual use prohibited) /Author (Automated_Claims_Processing Data Generator) /Creator (data_generator) /Producer (data_generator) /CreationDate (D:20260101000000Z) /ModDate (D:20260101000000Z) >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000317 00000 n 
+0000001101 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R /Info 6 0 R >>
+startxref
+1402
+%%EOF

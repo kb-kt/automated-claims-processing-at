@@ -84,3 +84,6 @@ codes:
   - code: PROVIDER_PATTERN_ANOMALY_SUSPECTED
     category: risk
     label_ko: 의료기관 단위 청구 패턴 이상 의심
+  - code: PRODUCT_ADJUDICATION_PROFILE_UNAVAILABLE
+    category: system
+    label_ko: 상품별 심사 프로파일 미구성

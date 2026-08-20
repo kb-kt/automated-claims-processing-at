@@ -793,3 +793,224 @@ Fraud signal handling must be conservative:
 - The Agent must not make a final fraud finding.
 - Fraud reasoning must be auditable through reason codes such as `DUPLICATE_RECEIPT_SUSPECTED`, `SAME_INSURED_PROVIDER_REPEAT_SUSPECTED`, and `PROVIDER_PATTERN_ANOMALY_SUSPECTED`.
 - Direct PII must remain outside the Agent input and should be handled by an upstream ingestion, consent, and identity verification layer.
+
+## 22. Template Parity Requirements for MVP Reuse
+
+The AI Agent Template must include reusable capabilities that are needed by the MVP, not only static schema and workflow definitions.
+
+### 22.1 Operational API Requirements
+
+Template-based applications should expose or be able to implement the following API surface:
+
+- submit and retrieve claims
+- list submitted claims
+- run and rerun reviews
+- retrieve reviewer queue
+- save and list reviewer actions
+- retrieve claim audit logs
+- run evaluations
+- retrieve active model/config metadata
+
+The canonical review response field is `output`. Implementations may also return `agent_output` for backward compatibility.
+
+### 22.2 Reviewer Experience Requirements
+
+The reviewer screen should support:
+
+- selecting from submitted claims as well as direct claim id entry
+- clearing stale recommendation/evidence panels when a different claim is loaded
+- showing a loading state while review workflow execution is in progress
+- displaying deterministic confidence separately from LLM explanation confidence
+- displaying evidence clarity, judgment difficulty, and uncertainty explanation
+- saving reviewer actions and showing action/audit history
+
+### 22.3 Confidence Requirements
+
+The numeric `confidence` is a deterministic tool/rule workflow confidence. The LLM must not replace it with self-reported confidence.
+
+The LLM may assist:
+
+- `review_summary`
+- `reviewer_notes`
+- `confidence_assessment.evidence_clarity`
+- `confidence_assessment.judgment_difficulty`
+- `confidence_assessment.uncertainty_level`
+- `confidence_assessment.uncertainty_explanation`
+- `confidence_assessment.assessment_basis`
+
+The Template must provide `explanation_confidence` so downstream apps can judge whether the LLM-written explanation remains faithful to tool outputs, policy basis, and calculation values.
+
+### 22.4 Persistence Requirements
+
+The Starter Kit persistence boundary must be repository-based and support:
+
+- claim input storage
+- agent output storage
+- tool call logs
+- retrieval logs
+- reviewer action history
+- audit logs
+- evaluation run records
+
+SQLite remains the local default. The repository boundary must allow future PostgreSQL implementation without changing service or API handlers.
+
+## 23. Specialist Agent Architecture Direction
+
+This section defines the next product direction for the AI Agent Template. It is documentation-only until the corresponding schemas, tool contracts, plugins, workflow, and tests are implemented.
+
+The AI Agent Template is the main reusable deliverable. MVP implementations must consume this Template rather than defining incompatible agent behavior inside `/mvp`.
+
+### 23.1 Orchestrator Agent Role
+
+The current claim-review Agent should evolve into an Orchestrator Agent. The Orchestrator coordinates specialist agents and produces a reviewer-facing assistant recommendation. It must not act as the sole source of truth for coverage, fraud, medical causality, calculation, or final payment decision.
+
+The Orchestrator is responsible for:
+
+- validating input and output schemas
+- selecting workflow branches
+- invoking specialist tool/agent plugins
+- merging specialist reports
+- detecting conflicts among reports
+- preserving citations and calculation trace
+- routing uncertain or high-risk claims to `human_review`
+- generating a concise reviewer-facing recommendation summary
+
+### 23.2 Policy and Coverage Analysis Agent
+
+`policy_search` and `coverage_resolver` should be extendable into a Policy and Coverage Analysis Agent.
+
+Target responsibilities:
+
+- search large policy corpora, riders, exclusions, non-coverage clauses, special terms, deductible clauses, and burden-of-proof clauses through RAG
+- map claim facts, KCD/EDI codes, accident type, care setting, and benefit category to policy clauses
+- return legal or contractual basis with citations
+- distinguish coverage, exclusion, deductible, limit, and unclear-policy findings
+- recommend `human_review` when citation quality is weak or clauses conflict
+
+The Agent must not fabricate clauses. Low-retrieval confidence, missing citation, or citation mismatch must trigger reviewer attention rather than automatic pay or denial.
+
+### 23.3 Fraud Risk Agent
+
+`fraud_signal_checker` should remain the fraud boundary and evolve into a Fraud Risk Agent.
+
+Target responsibilities:
+
+- detect duplicate receipt and duplicate document signals
+- analyze raw evidence from document hashes, fingerprints, claim history, and provider aggregates
+- integrate with Fraud_Check v1/v2 through the existing plugin contract
+- return fraud signal, risk score, reason codes, and evidence summary
+- route `fraud_suspected=true` to `human_review`
+
+Fraud risk output must never be used as an automatic denial. It is a reviewer-routing and investigation signal.
+
+### 23.4 Medical Review and Causality Agent
+
+The Template should add a Medical Review and Causality Agent.
+
+Target responsibilities:
+
+- normalize diagnosis and procedure codes using KCD/EDI mapping tools
+- compare diagnosis, treatment, care setting, age, sex, document evidence, and prior-history indicators
+- estimate diagnosis-treatment compatibility
+- identify possible pre-existing condition review needs
+- identify possible excessive-treatment review needs
+- recommend additional documents or human medical review when evidence is insufficient
+
+This Agent is distinct from Fraud Risk. Fraud focuses on suspicious behavior or document abuse. Medical Review focuses on medical relevance, causality, necessity, and evidence sufficiency.
+
+### 23.5 KCD/EDI Code Mapping Agent
+
+The Template should support a KCD/EDI Code Mapping Agent or tool layer.
+
+Target responsibilities:
+
+- map submitted diagnosis text and diagnosis codes to normalized KCD codes
+- map treatment/procedure names and billing codes to normalized EDI codes
+- return candidate mappings with confidence and provenance
+- detect ambiguous or invalid codes
+- provide normalized codes to policy, medical review, and calculation agents
+
+Ambiguous mapping must not be silently resolved when it affects payment, exclusion, or human-review routing.
+
+### 23.6 Document Understanding Agent
+
+The Template should define a Document Understanding Agent contract for PDF/image medical documents.
+
+Target responsibilities:
+
+- classify document type
+- extract structured fields from diagnosis certificates, receipts, detailed medical bills, prescriptions, test results, surgery/procedure notes, and physician notes
+- preserve extraction confidence and field-level provenance
+- flag when VLM or OCR review is required
+- provide structured document evidence to Policy, Medical Review, Fraud Risk, and Orchestrator steps
+
+The Template should support both text/OCR pipelines and VLM providers. The Orchestrator should consume structured extraction results rather than raw document bytes whenever possible.
+
+### 23.7 Model Provider Note
+
+The configured `general_llm` model may be suitable for orchestration, policy explanation, report synthesis, and reasoning over structured evidence. It must not be assumed to be sufficient for VLM document understanding unless the serving endpoint explicitly supports image or PDF inputs.
+
+When VLM document understanding is required, the Template should allow a separate model provider such as `document_vlm` to be configured independently from `general_llm`.
+
+### 23.8 Stage A Scope
+
+Stage A implements the reusable foundation without changing the existing claim-review workflow:
+
+- Agent Report standard
+- optional output `specialist_reports`
+- specialist contracts for Policy/Coverage Analysis, Document Understanding, KCD/EDI Code Mapping, and Medical Review/Causality
+- synthetic KCD/EDI baseline registry files
+- SQLite registry tables and seed/query boundary
+- separate `document_vlm` provider configuration
+- optional runtime `medical_evidence` input contract for candidate KCD/EDI mapping confidence, prior medical evidence, and insurer-style medical routing rules
+- seedable medical routing rule registry for replacing synthetic rules with insurer-approved rules
+
+Stage A does not yet make specialist agents mandatory workflow steps. The Orchestrator remains compatible with the existing deterministic workflow until the next implementation phase adds specialist plugins and workflow branching.
+
+Real KCD/EDI imports are not included in this repository. Production onboarding must verify official distribution and license terms before loading real code tables.
+
+### 23.9 Runtime Medical Evidence Contract
+
+The Template accepts `medical_evidence` as an optional input object. It is designed to provide non-label evidence to specialist agents without exposing evaluation answers.
+
+Allowed runtime evidence:
+
+- KCD/EDI candidate mappings with confidence and provenance
+- ambiguous mapping indicators and reason text
+- prior diagnoses, surgeries, tests, and treatment-continuity facts
+- pre-existing-condition indicators
+- insurer-approved or synthetic-insurer medical routing rules
+
+Disallowed runtime data:
+
+- `expected_*` labels
+- hidden medical scenario names
+- claim-review labels
+- fraud labels
+- final adjudication answers
+
+Medical specialist reports may use this evidence to recommend `continue_claim_review`, `request_documents`, or `human_review` inside `specialist_reports`. This does not by itself replace the deterministic claim-review decision unless the insurer explicitly approves a workflow rule that promotes medical routing into final workflow routing.
+
+Synthetic routing rules are carried through `insurer_medical_routing_rules.json` and SQLite `medical_routing_rules`. Production implementations must replace these rows with insurer-approved rules and preserve version, owner, approval status, and effective dates.
+
+### 23.10 Official Registry Import Requirement
+
+The Template must support an approved-file import path for official KCD, official or insurer-authorized EDI/procedure codes, and insurer-approved medical routing rules.
+
+Requirements:
+
+- import from local insurer-approved CSV/JSON files rather than scraping public sites at runtime
+- preserve source file, source URL, version, effective dates, and license note
+- mark imported official rows as `synthetic=false`
+- reject malformed insurer routing rules before SQLite seed
+- keep raw official source files outside the repository unless redistribution is explicitly permitted
+- expose the same import boundary to Starter Kit and MVP
+
+## 24. Customer PDF Upload Requirement
+
+- An accepted claim can receive one or more PDF attachments through a claim-scoped API.
+- Uploads validate claim existence, registered document type, MIME, size, PDF structure, SHA-256, and page count.
+- Generated synthetic documents and customer-uploaded runtime documents use separate storage roots.
+- SQLite stores metadata and safe relative paths, not PDF bytes or client-provided paths.
+- Uploaded receipts are available through the existing internal Document API for Fraud_Check v2 raw-evidence analysis.
+- Customer-role authorization permits upload without granting arbitrary claim-read access.

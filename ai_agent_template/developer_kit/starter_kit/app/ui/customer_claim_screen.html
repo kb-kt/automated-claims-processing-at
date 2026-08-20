@@ -2,17 +2,61 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Claim Intake</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #f6f7f9; color: #1f2933; }
-    header { background: #ffffff; border-bottom: 1px solid #d8dde6; padding: 18px 28px; }
-    main { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 24px; }
-    section { background: #ffffff; border: 1px solid #d8dde6; padding: 18px; }
-    label { display: block; font-size: 13px; margin-top: 14px; color: #52606d; }
-    input, textarea, select { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 9px; border: 1px solid #bcccdc; }
-    textarea { min-height: 280px; font-family: Consolas, monospace; }
-    button { margin-top: 16px; padding: 10px 14px; border: 0; background: #005fcc; color: white; font-weight: 700; }
-    .status { border-left: 4px solid #005fcc; padding-left: 12px; }
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --line: #d7dee8;
+      --text: #17212f;
+      --muted: #5d6b7a;
+      --blue: #075db3;
+      --blue-dark: #044885;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
+    header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 18px 28px; }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 16px; letter-spacing: 0; }
+    main { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 20px; }
+    section { background: var(--panel); border: 1px solid var(--line); padding: 16px; }
+    label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 12px; }
+    input, textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 0;
+      padding: 9px 10px;
+      border: 1px solid #b8c4d2;
+      font: inherit;
+      min-height: 38px;
+      background: #ffffff;
+      color: var(--text);
+    }
+    textarea { min-height: 520px; font-family: Consolas, monospace; font-size: 12px; resize: vertical; }
+    button {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border: 1px solid var(--blue);
+      background: var(--blue);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: var(--blue-dark); }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      min-height: 72px;
+      font-size: 12px;
+    }
+    .muted { color: var(--muted); }
+    .upload-box { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .upload-box button:disabled { opacity: 0.5; cursor: not-allowed; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -22,18 +66,219 @@
   <main>
     <section>
       <h2>Claim Summary</h2>
-      <label>Policy ID<input value="POL-SYN-EVAL-000001"></label>
-      <label>Product ID<input value="SYN-MED-001"></label>
-      <label>Claim Amount<input value="681994"></label>
-      <label>Care Setting<select><option>outpatient</option><option>inpatient</option><option>pharmacy</option></select></label>
-      <button>Submit Claim</button>
+      <label>Claim ID<input id="claimId" value="CLM-STARTER-0001"></label>
+      <label>Policy ID<input id="policyId" list="policyOptions" value="POL-SYN-SYN-MED-001-0001"><datalist id="policyOptions"></datalist></label>
+      <label>Product ID<input id="productId" list="productOptions" value="SYN-MED-001"><datalist id="productOptions"></datalist></label>
+      <label>Product Name<input id="productName" value="Loading product catalog" readonly></label>
+      <label>Claimed Amount<input id="claimedAmount" type="number" value="681994"></label>
+      <label>Care Setting
+        <select id="careSetting">
+          <option value="outpatient">outpatient</option>
+          <option value="inpatient">inpatient</option>
+          <option value="pharmacy">pharmacy</option>
+        </select>
+      </label>
+      <button id="applySummary">Apply To JSON</button>
+      <button id="submitClaim">Submit Claim</button>
+      <div class="upload-box">
+        <h2>Attach PDF</h2>
+        <label>Document Type
+          <select id="documentType">
+            <option value="medical_receipt">medical_receipt</option>
+            <option value="medical_statement">medical_statement</option>
+            <option value="diagnosis_note">diagnosis_note</option>
+            <option value="hospitalization_certificate">hospitalization_certificate</option>
+            <option value="prescription">prescription</option>
+            <option value="pharmacy_receipt">pharmacy_receipt</option>
+          </select>
+        </label>
+        <label>PDF File<input id="documentFile" type="file" accept="application/pdf,.pdf"></label>
+        <button id="uploadDocument" disabled>Upload PDF</button>
+        <pre id="uploadResult" class="muted">Submit a claim first</pre>
+      </div>
+      <h2 style="margin-top: 20px;">Result</h2>
+      <pre id="result" class="muted">Ready</pre>
     </section>
     <section>
       <h2>JSON Payload</h2>
-      <p class="status">Paste a claim_review_input JSON payload and submit it to POST /claims.</p>
-      <textarea>{"claim_id":"CLM-EVAL-000001"}</textarea>
+      <textarea id="payload"></textarea>
     </section>
   </main>
+  <script>
+    const sample = {
+      claim_id: "CLM-STARTER-0001",
+      policy_id: "POL-SYN-SYN-MED-001-0001",
+      product_id: "SYN-MED-001",
+      scenario_type: "starter_outpatient_partial_pay",
+      insured_profile: {
+        insured_id: "INS-SYN-EXAMPLE-0001",
+        age_at_service: 34,
+        age_band: "30s",
+        sex: "F",
+        policyholder_relation: "self"
+      },
+      claimant: {
+        synthetic_person_id: "INS-SYN-EXAMPLE-0001",
+        age: 34,
+        gender: "F"
+      },
+      policy: {
+        status: "active",
+        coverage_start_date: "2026-01-01",
+        coverage_end_date: "2026-12-31"
+      },
+      claim: {
+        care_setting: "outpatient",
+        benefit_category: "noncovered",
+        treatment_code: "TRT-NONCOV-001",
+        diagnosis_code: "SYN-M54",
+        incident_date: "2026-05-03",
+        treatment_start_date: "2026-05-03",
+        treatment_end_date: "2026-05-03",
+        claim_date: "2026-05-07",
+        claimed_amount: 681994,
+        receipt_id: "RCT-SYN-EXAMPLE-0001",
+        receipt_hash: "RH-SYN-EXAMPLE-0001",
+        provider_id: "PROV-SYN-HOSP-001",
+        provider_type: "medical_institution"
+      },
+      documents: ["claim_form", "medical_receipt", "medical_statement", "diagnosis_note"],
+      claim_history: {
+        same_diagnosis_claims_90d: 0,
+        manual_therapy_count_180d: 0,
+        same_insured_provider_claims_30d: 0,
+        same_provider_claims_30d: 0,
+        prior_receipt_hashes: [],
+        prior_receipt_ids: []
+      },
+      signals: {
+        cosmetic_purpose: false,
+        pre_existing_condition: false,
+        intentional_injury: false,
+        non_medical_provider: false,
+        suspected_duplicate_receipt: false,
+        document_claim_mismatch: false
+      }
+    };
+
+    const payload = document.getElementById("payload");
+    const result = document.getElementById("result");
+    let acceptedClaimId = "";
+    let products = [];
+    payload.value = JSON.stringify(sample, null, 2);
+
+    function applySummary() {
+      const data = JSON.parse(payload.value);
+      data.claim_id = document.getElementById("claimId").value;
+      data.policy_id = document.getElementById("policyId").value;
+      data.product_id = document.getElementById("productId").value;
+      data.claim.care_setting = document.getElementById("careSetting").value;
+      data.claim.claimed_amount = Number(document.getElementById("claimedAmount").value);
+      payload.value = JSON.stringify(data, null, 2);
+    }
+
+    async function parseJsonResponse(response) {
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : {}; } catch (_) { data = null; }
+      if (!response.ok) {
+        const error = data?.error || data?.detail?.error;
+        const message = error?.message || (typeof data?.detail === "string" ? data.detail : "") || text || `HTTP ${response.status}`;
+        const requestId = error?.request_id || response.headers.get("X-Request-ID");
+        throw new Error(`${error?.code ? `${error.code}: ` : ""}${message}${requestId ? ` [${requestId}]` : ""}`);
+      }
+      if (data === null) throw new Error(`INVALID_JSON_RESPONSE: HTTP ${response.status}`);
+      return data;
+    }
+
+    async function submitClaim() {
+      try {
+        applySummary();
+        const response = await fetch("/claims", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload.value
+        });
+        const data = await parseJsonResponse(response);
+        acceptedClaimId = data.claim_id;
+        document.getElementById("uploadDocument").disabled = false;
+        result.className = "";
+        result.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        result.className = "muted";
+        result.textContent = error.message;
+      }
+    }
+
+    function renderProductName() {
+      const productId = document.getElementById("productId").value.trim();
+      const product = products.find((item) => item.product_id === productId);
+      document.getElementById("productName").value = product?.product_name || "Unknown or manually entered Product ID";
+    }
+
+    async function loadPolicies(preferredPolicyId = "") {
+      renderProductName();
+      const productId = document.getElementById("productId").value.trim();
+      if (!products.some((item) => item.product_id === productId)) return;
+      const response = await fetch(`/products/${encodeURIComponent(productId)}/policies`);
+      const data = await parseJsonResponse(response);
+      const baselinePolicies = data.policies.filter((policy) => policy.source === "catalog_baseline");
+      const options = baselinePolicies.length ? baselinePolicies : data.policies;
+      document.getElementById("policyOptions").innerHTML = options.map((policy) =>
+        `<option value="${policy.policy_id}">${policy.status}</option>`
+      ).join("");
+      const input = document.getElementById("policyId");
+      const candidate = preferredPolicyId || input.value.trim();
+      if (!data.policies.some((policy) => policy.policy_id === candidate) && data.policies.length) {
+        input.value = options[0].policy_id;
+      }
+    }
+
+    async function loadProductCatalog() {
+      try {
+        const data = await parseJsonResponse(await fetch("/products"));
+        products = data.products;
+        document.getElementById("productOptions").innerHTML = products.map((product) =>
+          `<option value="${product.product_id}">${product.product_name}</option>`
+        ).join("");
+        await loadPolicies(document.getElementById("policyId").value.trim());
+      } catch (error) {
+        document.getElementById("productName").value = error.message;
+      }
+    }
+
+    async function uploadDocument() {
+      const fileInput = document.getElementById("documentFile");
+      const output = document.getElementById("uploadResult");
+      if (!acceptedClaimId || !fileInput.files[0]) {
+        output.textContent = "Submit a claim and select a PDF first";
+        return;
+      }
+      const documentType = document.getElementById("documentType").value;
+      const button = document.getElementById("uploadDocument");
+      button.disabled = true;
+      output.textContent = "Uploading and verifying PDF";
+      try {
+        const response = await fetch(
+          `/claims/${encodeURIComponent(acceptedClaimId)}/documents?document_type=${encodeURIComponent(documentType)}`,
+          { method: "POST", headers: { "Content-Type": "application/pdf" }, body: fileInput.files[0] }
+        );
+        const data = await parseJsonResponse(response);
+        output.textContent = JSON.stringify(data, null, 2);
+        fileInput.value = "";
+      } catch (error) {
+        output.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    document.getElementById("applySummary").addEventListener("click", applySummary);
+    document.getElementById("submitClaim").addEventListener("click", submitClaim);
+    document.getElementById("uploadDocument").addEventListener("click", uploadDocument);
+    document.getElementById("productId").addEventListener("change", () => loadPolicies());
+    document.getElementById("productId").addEventListener("input", () => loadPolicies());
+    loadProductCatalog();
+  </script>
 </body>
 </html>
-

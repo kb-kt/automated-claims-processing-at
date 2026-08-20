@@ -1,0 +1,112 @@
+{
+  "product_id": "ABL_ATOZ_UNIVERSAL_LIFE_CANCER_HOSPITALIZATION_RIDER_III_renewable",
+  "product_name": "AtoZ 무배당 ABL유니버셜종신보험(보증비용부과형)(Az금융GA전용) 2501_간편가입암직접치료입원보장특약Ⅲ(갱신형) (선택특약)",
+  "product_type": "real_insurance_product",
+  "version": "2501",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "ABL생명 간편가입 암 직접 치료 입원 보장 특약Ⅲ, 갱신형, 종신가능, 월납 10~30년, 입원 일당 20만원 보장",
+  "coverages": [
+    {
+      "coverage_code": "COV_CANCER_DIRECT_TREATMENT_HOSPITALIZATION",
+      "name": "암 직접 치료 입원 일당",
+      "care_setting": "inpatient",
+      "benefit_category": "cancer",
+      "limit_per_claim": 200000,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0,
+        "fixed_amount": 0
+      },
+      "required_documents": [
+        "claim_form",
+        "medical_receipt",
+        "diagnosis_certificate",
+        "hospitalization_certificate"
+      ],
+      "source_fields": {
+        "insured_amount": "1일 20만원",
+        "product_name": "간편가입암직접치료입원보장특약Ⅲ(갱신형) (선택특약)",
+        "payment_type": "월납",
+        "payment_period": "10년, 15년, 20년, 30년",
+        "product_period": "종신가능",
+        "renewable_type": "갱신형"
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_INTENTIONAL_ACT",
+      "name": "고의적 사고"
+    },
+    {
+      "code": "EXC_DISCLOSURE_VIOLATION",
+      "name": "2년 이내 알릴 의무 위반"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_MISSING_LIMIT_DEFINITIONS",
+      "condition": "insured amount clearly defined only as daily limit, no annual limit given"
+    },
+    {
+      "code": "HR_AMBIGUOUS_AGE_RANGE",
+      "condition": "male and female eligible ages differ, needs gender-based routing"
+    },
+    {
+      "code": "HR_MISSING_COVERAGE_PERIOD_DETAILS",
+      "condition": "product period stated as '종신가능' and renewable, duration ambiguous"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_02.종신/보험_02_AtoZ 무배당 ABL유니버셜종신보험(보증비용부과형)(Az금융GA전용) 2501_간편가입암직접치료입원보장특약Ⅲ(갱신형) (선택특약).json"
+  },
+  "extraction_warnings": [
+    "effective_date unknown, defaulted to 2000-01-01",
+    "no deductible/copay information, defaulted to zero rate deductible",
+    "no annual or per period limit given for coverage; only daily insured amount provided",
+    "required_documents partially inferred based on benefit type",
+    "product period '종신가능' and '갱신형' imply renewal and coverage duration ambiguity"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_id",
+      "source_field": "product_name",
+      "source_value": "간편가입암직접치료입원보장특약Ⅲ(갱신형) (선택특약)",
+      "confidence": "high"
+    },
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "AtoZ 무배당 ABL유니버셜종신보험(보증비용부과형)(Az금융GA전용) 2501_간편가입암직접치료입원보장특약Ⅲ(갱신형) (선택특약)",
+      "confidence": "high"
+    },
+    {
+      "field": "products.version",
+      "source_field": "mother_product_name",
+      "source_value": "AtoZ 무배당 ABL유니버셜종신보험(보증비용부과형)(Az금융GA전용) 2501",
+      "confidence": "medium"
+    },
+    {
+      "field": "products.coverages[0].limit_per_claim",
+      "source_field": "insured_amount",
+      "source_value": "1일 20만원",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0].name",
+      "source_field": "exclusion_items",
+      "source_value": "고의적 사고 및 2년 이내 알릴 의무 위반",
+      "confidence": "high"
+    }
+  ]
+}

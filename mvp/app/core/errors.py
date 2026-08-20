@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from ai_agent_template.developer_kit.sdk.claim_agent_sdk import ApiError
 
-class MvpError(Exception):
+
+class MvpError(ApiError):
     code = "MVP_ERROR"
     status_code = 500
 
     def __init__(self, message: str, details: list[str] | None = None):
-        super().__init__(message)
-        self.message = message
-        self.details = details or []
+        super().__init__(message, details)
 
 
 class ValidationFailed(MvpError):
@@ -24,4 +24,3 @@ class NotFound(MvpError):
 class Conflict(MvpError):
     code = "CONFLICT"
     status_code = 409
-

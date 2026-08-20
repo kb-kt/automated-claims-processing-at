@@ -13,6 +13,64 @@ class ClaimReviewRepository(Protocol):
     def get_claim(self, claim_id: str) -> dict[str, Any] | None:
         ...
 
+    def get_fraud_current_claim(self, claim_id: str) -> dict[str, Any] | None:
+        ...
+
+    def list_historical_claims_for_claim(self, claim_id: str) -> list[dict[str, Any]]:
+        ...
+
+    def list_document_metadata_for_claim(self, claim_id: str) -> list[dict[str, Any]]:
+        ...
+
+    def get_document_metadata(self, document_id: str) -> dict[str, Any] | None:
+        ...
+
+    def save_uploaded_document(self, metadata: dict[str, Any]) -> None:
+        ...
+
+    def seed_fraud_context(
+        self,
+        *,
+        split: str,
+        seed_rows: list[dict[str, Any]],
+        historical_claims: list[dict[str, Any]],
+        document_metadata: list[dict[str, Any]],
+        claim_document_links: list[dict[str, Any]],
+        source_files: list[str],
+    ) -> dict[str, Any]:
+        ...
+
+    def seed_medical_registry(
+        self,
+        *,
+        medical_code_registry: list[dict[str, Any]],
+        edi_code_registry: list[dict[str, Any]],
+        diagnosis_treatment_rules: list[dict[str, Any]],
+        source_files: list[str],
+        insurer_medical_routing_rules: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        ...
+
+    def get_medical_code(self, code: str, *, code_system: str = "KCD") -> dict[str, Any] | None:
+        ...
+
+    def get_procedure_code(self, code: str, *, code_system: str = "EDI") -> dict[str, Any] | None:
+        ...
+
+    def find_diagnosis_treatment_rule(self, kcd_code: str, edi_code: str) -> dict[str, Any] | None:
+        ...
+
+    def get_medical_routing_rule(self, rule_id: str) -> dict[str, Any] | None:
+        ...
+
+    def find_medical_routing_rule(
+        self,
+        *,
+        reason_code: str,
+        routing: str | None = None,
+    ) -> dict[str, Any] | None:
+        ...
+
     def list_claims(self, *, limit: int = 50) -> list[dict[str, Any]]:
         ...
 
@@ -31,6 +89,18 @@ class ClaimReviewRepository(Protocol):
         ...
 
     def get_latest_review(self, claim_id: str) -> dict[str, Any] | None:
+        ...
+
+    def save_specialist_agent_reports(self, claim_id: str, reports: list[dict[str, Any]]) -> None:
+        ...
+
+    def list_specialist_agent_reports(self, claim_id: str) -> list[dict[str, Any]]:
+        ...
+
+    def save_document_extraction_results(self, claim_id: str, results: list[dict[str, Any]]) -> None:
+        ...
+
+    def list_document_extraction_results(self, claim_id: str) -> list[dict[str, Any]]:
         ...
 
     def save_tool_call_log(

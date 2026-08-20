@@ -23,4 +23,3 @@ plugins:
   decision_validator:
     module: ai_agent_template.developer_kit.plugins.synthetic.decision_validator_plugin
     class: SyntheticDecisionValidatorPlugin
-

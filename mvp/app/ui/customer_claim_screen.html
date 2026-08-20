@@ -133,6 +133,20 @@
     .message { min-height: 20px; color: var(--muted); }
     .message.error { color: var(--danger); }
     .message.ok { color: var(--accent); }
+    .upload-panel {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(180px, 0.45fr) minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f8fafc;
+    }
+    .upload-panel button { margin: 0; }
+    .upload-panel button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upload-result { grid-column: 1 / -1; margin: 0; padding-left: 18px; color: var(--muted); }
     pre {
       margin: 0;
       white-space: pre-wrap;
@@ -149,6 +163,7 @@
       header { padding: 10px 14px; }
       main { grid-template-columns: 1fr; padding: 12px; }
       .grid { grid-template-columns: 1fr; }
+      .upload-panel { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -165,8 +180,9 @@
       </div>
       <div class="grid">
         <label>Claim ID<input id="claim_id" value="MVP-CLAIM-0001"></label>
-        <label>Policy ID<input id="policy_id" value="POL-MVP-0001"></label>
-        <label>Product ID<input id="product_id" value="SYN-MED-001"></label>
+        <label>Policy ID<input id="policy_id" list="policyOptions" value="POL-SYN-SYN-MED-001-0001"><datalist id="policyOptions"></datalist></label>
+        <label>Product ID<input id="product_id" list="productOptions" value="SYN-MED-001"><datalist id="productOptions"></datalist></label>
+        <label class="full">Product Name<input id="product_name" value="Loading product catalog" readonly></label>
         <label>Scenario Type<input id="scenario_type" value="manual_claim"></label>
         <label>Insured ID<input id="insured_id" value="INS-MVP-0001"></label>
         <label>Age at Service<input id="age" type="number" value="42"></label>
@@ -198,6 +214,25 @@
 medical_receipt
 medical_statement
 diagnosis_note</textarea></label>
+        <div class="upload-panel">
+          <label>PDF Document Type
+            <select id="uploadDocumentType">
+              <option value="medical_receipt">Medical Receipt</option>
+              <option value="medical_statement">Medical Statement</option>
+              <option value="diagnosis_note">Diagnosis Note</option>
+              <option value="hospitalization_certificate">Hospitalization Certificate</option>
+              <option value="prescription">Prescription</option>
+              <option value="pharmacy_receipt">Pharmacy Receipt</option>
+              <option value="diagnosis_certificate">Diagnosis Certificate</option>
+              <option value="physician_opinion">Physician Opinion</option>
+              <option value="claim_form">Claim Form</option>
+            </select>
+          </label>
+          <label>PDF File<input id="uploadDocumentFile" type="file" accept="application/pdf,.pdf"></label>
+          <button id="uploadDocumentBtn" type="button" disabled>Upload PDF</button>
+          <div class="message" id="uploadMessage">Submit the claim before uploading documents.</div>
+          <ul class="upload-result" id="uploadedDocuments"></ul>
+        </div>
       </div>
       <div class="actions">
         <button id="previewBtn">Preview JSON</button>
@@ -227,6 +262,8 @@ diagnosis_note</textarea></label>
     ];
     const $ = (id) => document.getElementById(id);
     const bool = (id) => $(id).value === "true";
+    let acceptedClaimId = "";
+    let products = [];
 
     function docs() {
       return $("documents").value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
@@ -307,6 +344,58 @@ diagnosis_note</textarea></label>
       $("jsonPreview").textContent = JSON.stringify(data, null, 2);
     }
 
+    async function parseJsonResponse(response) {
+      const text = await response.text();
+      let body = null;
+      try { body = text ? JSON.parse(text) : {}; } catch (_) { body = null; }
+      if (!response.ok) {
+        const error = body?.error || body?.detail?.error;
+        const message = error?.message || (typeof body?.detail === "string" ? body.detail : "") || text || `HTTP ${response.status}`;
+        const requestId = error?.request_id || response.headers.get("X-Request-ID");
+        throw new Error(`${error?.code ? `${error.code}: ` : ""}${message}${requestId ? ` [${requestId}]` : ""}`);
+      }
+      if (body === null) throw new Error(`INVALID_JSON_RESPONSE: HTTP ${response.status}`);
+      return body;
+    }
+
+    function renderProductName() {
+      const product = products.find((item) => item.product_id === $("product_id").value.trim());
+      $("product_name").value = product?.product_name || "Unknown or manually entered Product ID";
+    }
+
+    async function loadPolicies(preferredPolicyId = "") {
+      renderProductName();
+      const productId = $("product_id").value.trim();
+      if (!productId || !products.some((item) => item.product_id === productId)) {
+        $("policyOptions").innerHTML = "";
+        return;
+      }
+      const data = await parseJsonResponse(await fetch(`/products/${encodeURIComponent(productId)}/policies`));
+      const intakePolicies = data.policies.filter((policy) => policy.source === "catalog_baseline");
+      const options = intakePolicies.length ? intakePolicies : data.policies;
+      $("policyOptions").innerHTML = options.map((policy) =>
+        `<option value="${policy.policy_id}">${policy.status}</option>`
+      ).join("");
+      const candidate = preferredPolicyId || $("policy_id").value.trim();
+      if (!data.policies.some((policy) => policy.policy_id === candidate) && data.policies.length) {
+        $("policy_id").value = options[0].policy_id;
+      }
+      render();
+    }
+
+    async function loadProductCatalog() {
+      try {
+        const data = await parseJsonResponse(await fetch("/products"));
+        products = data.products;
+        $("productOptions").innerHTML = products.map((product) =>
+          `<option value="${product.product_id}">${product.product_name}</option>`
+        ).join("");
+        await loadPolicies($("policy_id").value.trim());
+      } catch (error) {
+        $("product_name").value = error.message;
+      }
+    }
+
     async function submitClaim() {
       render();
       $("submitMessage").textContent = "Submitting";
@@ -317,11 +406,13 @@ diagnosis_note</textarea></label>
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload())
         });
-        const body = await response.json();
-        if (!response.ok) throw new Error(JSON.stringify(body.detail || body));
+        const body = await parseJsonResponse(response);
         $("statusBadge").textContent = "Submitted";
         $("submitMessage").textContent = `${body.claim_id} accepted`;
         $("submitMessage").className = "message ok";
+        acceptedClaimId = body.claim_id;
+        $("uploadDocumentBtn").disabled = false;
+        $("uploadMessage").textContent = "Select a PDF to attach to the accepted claim.";
       } catch (error) {
         $("statusBadge").textContent = "Error";
         $("submitMessage").textContent = error.message;
@@ -329,10 +420,51 @@ diagnosis_note</textarea></label>
       }
     }
 
+    async function uploadDocument() {
+      const file = $("uploadDocumentFile").files[0];
+      if (!acceptedClaimId) {
+        $("uploadMessage").textContent = "Submit the claim first.";
+        $("uploadMessage").className = "message error";
+        return;
+      }
+      if (!file) {
+        $("uploadMessage").textContent = "Select a PDF file.";
+        $("uploadMessage").className = "message error";
+        return;
+      }
+      $("uploadDocumentBtn").disabled = true;
+      $("uploadMessage").textContent = "Uploading and verifying PDF";
+      $("uploadMessage").className = "message";
+      const documentType = $("uploadDocumentType").value;
+      try {
+        const response = await fetch(
+          `/claims/${encodeURIComponent(acceptedClaimId)}/documents?document_type=${encodeURIComponent(documentType)}`,
+          { method: "POST", headers: { "Content-Type": "application/pdf" }, body: file }
+        );
+        const body = await parseJsonResponse(response);
+        const uploaded = body.document;
+        const item = window.document.createElement("li");
+        item.textContent = `${uploaded.document_type} · ${uploaded.page_count} page · ${uploaded.file_size} bytes`;
+        $("uploadedDocuments").appendChild(item);
+        $("uploadMessage").textContent = `${uploaded.document_id} uploaded and verified`;
+        $("uploadMessage").className = "message ok";
+        $("uploadDocumentFile").value = "";
+      } catch (error) {
+        $("uploadMessage").textContent = error.message;
+        $("uploadMessage").className = "message error";
+      } finally {
+        $("uploadDocumentBtn").disabled = false;
+      }
+    }
+
     ids.forEach((id) => $(id).addEventListener("input", render));
+    $("product_id").addEventListener("change", () => loadPolicies());
+    $("product_id").addEventListener("input", () => loadPolicies());
     $("previewBtn").addEventListener("click", render);
     $("submitBtn").addEventListener("click", submitClaim);
+    $("uploadDocumentBtn").addEventListener("click", uploadDocument);
     render();
+    loadProductCatalog();
   </script>
 </body>
 </html>

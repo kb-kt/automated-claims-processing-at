@@ -16,6 +16,22 @@ Run from repository root:
 python -m unittest discover -s integration_tests
 ```
 
+The integration suite also verifies Template/MVP plugin profile parity, canonical review API envelope fields, and recursive label isolation across generated runtime artifacts. Run all project gates with:
+
+```powershell
+python scripts\run_quality_gates.py
+```
+
+`test_fraud_check_cross_workspace_e2e.py` starts the real Fraud_Check v2 service from the sibling workspace at `C:\Users\PC\AA\Fraud_Check` and connects it to the Claims evidence API and the MVP v2 plugin. The Fraud_Check virtual environment must exist at `.venv\Scripts\python.exe`; the test only reads and executes that workspace and does not modify it.
+
+Run only the cross-workspace checks with:
+
+```powershell
+C:\Python314\python.exe -m unittest integration_tests.test_fraud_check_cross_workspace_e2e -v
+```
+
+The nine checks cover clean continuation, exact and altered duplicates, document mismatches, behavior thresholds, fail-closed routing, internal document API safety, label isolation, and log redaction.
+
 Expected source artifacts:
 
 ```text

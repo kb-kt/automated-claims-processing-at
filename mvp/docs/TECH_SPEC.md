@@ -340,10 +340,14 @@ GET  /claims/{claim_id}
         "path": "$.claim.claimed_amount",
         "reason": "must be greater than or equal to 0"
       }
-    ]
+    ],
+    "retryable": false,
+    "request_id": "REQ-01H..."
   }
 }
 ```
+
+모든 public/internal API 오류는 Template의 `schemas/api_error.schema.json`을 따른다. 인증 오류도 동일한 envelope로 반환하며, 응답 헤더 `X-Request-ID`와 본문의 `request_id`를 일치시킨다. Tool/Workflow의 도메인 오류 코드는 별도 failure envelope에 유지하고, fraud 등 핵심 Tool 실패는 자동 지급 또는 자동 거절로 진행하지 않고 `human_review`로 fail-closed 처리한다.
 
 ### 7.3 Reviews API
 
@@ -1309,6 +1313,19 @@ Tests must verify:
 - each default demo scenario still produces its expected workflow decision
 - `/demo/scenarios`, `/demo/scenarios/{scenario_id}`, and `/ui/demo` are registered in FastAPI
 
+### 20.6 Fraud Check Evidence Presets
+
+`/ui/demo` provides a separate `Fraud Check Evidence Presets` group backed by:
+
+```text
+GET /demo/fraud-presets
+GET /demo/fraud-presets/{preset_id}
+```
+
+The service reads only whitelisted runtime claims from `claims_eval.jsonl`; it never reads `fraud_labels_*` or claim-review labels. Presets preserve their `CLM-EVAL-*` claim IDs so the seeded historical claims, document metadata, fingerprints, and PDFs remain addressable by Fraud_Check v2. Supported cases cover clean evidence, exact/legacy/altered duplicates, amount/date/provider mismatches, 2/3 and 49/50 behavior boundaries, missing documents, and corrupted PDFs.
+
+Before using these buttons, run `python -m mvp.app.db.seed_fraud_context --split dev --split eval`. The UI sends only the claim payload to `/claims` and `/reviews`; expected Fraud routing and reason codes remain demo-only display metadata.
+
 ## 21. MVP Demo Scenario Presets
 
 ### 20.1 Scope
@@ -1477,3 +1494,536 @@ The following items remain future scope because they need real data, operational
 - RAG reranker/vector DB integration
 - reviewer feedback learning loop
 - appeal/re-review workflow
+
+## 25. Fraud_Check Remote Integration
+
+MVP uses the AI Agent Template tool contract for `fraud_signal_checker`. Until Fraud_Check is complete, default local/demo execution uses the synthetic fraud checker in `mvp/config/plugins.yaml`.
+
+Remote Fraud_Check integration is available through `mvp/config/plugins.remote.yaml`:
+
+```yaml
+fraud_signal_checker:
+  module: mvp.app.plugins.remote_fraud_signal_checker
+  class: RemoteFraudSignalCheckerPlugin
+```
+
+Runtime environment:
+
+```powershell
+$env:CLAIM_MVP_PLUGIN_CONFIG = "C:\Users\PC\AA\Automated_Claims_Processing\mvp\config\plugins.remote.yaml"
+$env:FRAUD_CHECK_URL = "http://127.0.0.1:8010"
+$env:FRAUD_CHECK_API_KEY = "optional-token"
+```
+
+The plugin calls:
+
+```text
+POST {FRAUD_CHECK_URL}/v1/fraud/check
+timeout: 3000ms
+```
+
+Request body:
+
+```json
+{
+  "claim": {},
+  "claim_history": {},
+  "signals": {},
+  "insured_profile": {}
+}
+```
+
+Remote response fields required by the plugin:
+
+- `fraud_suspected`
+- `fraud_reason_codes`
+- `risk_score`
+- `routing`
+- `engine_version`
+
+Fail-closed behavior:
+
+- `fraud_suspected=true` always routes to `human_review`.
+- Fraud_Check timeout, connection failure, HTTP 4xx/5xx, invalid JSON, or missing required fields returns a failed tool envelope.
+- A failed fraud tool result is handled by the existing WorkflowRunner as `human_review`.
+- The MVP must not automatically pay or deny when Fraud_Check is unavailable.
+- Default local/demo mode uses the synthetic fraud plugin and does not require Fraud_Check.
+- In remote mode, the synthetic fraud plugin is not used as a remote-failure fallback.
+
+Privacy/logging requirements:
+
+- Do not write raw claim payloads or personal identifiers to general application logs.
+- Tool-call records should be treated as restricted operational data.
+- Safe operational fields are status, duration, error code, contract version, routing, and engine version.
+
+## 26. Fraud_Check v2 Raw Evidence Integration
+
+Implemented MVP components:
+
+- [x] Internal API router: `mvp/app/api/internal.py`
+- [x] SQLite migration: `mvp/app/db/migrations/003_fraud_context_documents.sql`
+- [x] Repository protocol and SQLite implementation for fraud context and document metadata
+- [x] Seed CLI: `mvp/app/db/seed_fraud_context.py`
+- [x] v2 remote plugin wrapper: `mvp/app/plugins/remote_fraud_signal_checker_v2.py`
+- [x] v2 plugin config: `mvp/config/plugins.remote.v2.yaml`
+- [x] Settings for `fraud_generated_dir` and `max_document_bytes`
+
+The MVP exposes the same internal API contract as the Template Starter Kit:
+
+```text
+GET /internal/v1/fraud-context/claims/{claim_id}
+GET /internal/v1/claims/{claim_id}/documents
+GET /internal/v1/documents/{document_id}/content
+```
+
+The fraud context response includes current claim `document_metadata` and Stage A `historical_document_fingerprints`. It prefers an explicit historical fingerprint index and falls back to historical receipt IDs and hashes when historical PDFs are unavailable; fraud labels are never used.
+
+Authentication:
+
+```powershell
+$env:CLAIMS_INTERNAL_API_KEY = "optional-internal-token"
+```
+
+When this variable is set, requests must include:
+
+```text
+Authorization: Bearer <CLAIMS_INTERNAL_API_KEY>
+```
+
+Seed command:
+
+```powershell
+python -m mvp.app.db.seed_fraud_context --split dev --split eval
+```
+
+Remote v2 configuration:
+
+```powershell
+$env:CLAIM_MVP_PLUGIN_CONFIG = "C:\Users\PC\AA\Automated_Claims_Processing\mvp\config\plugins.remote.v2.yaml"
+$env:FRAUD_CHECK_URL = "http://127.0.0.1:8010"
+$env:FRAUD_CHECK_V2_TIMEOUT_MS = "15000"
+$env:FRAUD_ANALYSIS_MODE = "raw_evidence"
+$env:CLAIMS_INTERNAL_BASE_URL = "http://127.0.0.1:8000"
+$env:CLAIMS_INTERNAL_API_KEY = "optional-internal-token"
+```
+
+The v2 plugin sends:
+
+```text
+POST {FRAUD_CHECK_URL}/v2/fraud/check
+```
+
+`source_system` is fixed to:
+
+```text
+automated_claims_processing_mvp
+```
+
+Runtime separation:
+
+- runtime DB may load `fraud_context_seed_*`, `historical_claims`, `document_metadata_*`, and `claim_document_links_*`
+- runtime DB must not load `fraud_labels_*` or claim-review `labels_*`
+- internal APIs must not expose labels
+- PDF bytes are served only through registered `document_id` metadata under the generated documents root
+
+Fail-closed behavior:
+
+- `fraud_suspected=true` always results in final `human_review`
+- `routing=human_review` or `requires_human_review=true` from Fraud_Check also forces final `human_review`
+- Fraud_Check down, Claims internal API down, invalid JSON, bad schema, request mismatch, claim mismatch, unsafe invariant, HTTP error, or timeout must not result in automatic pay or automatic deny
+
+## 27. Planned Specialist Agent MVP Integration
+
+This section documents future integration design only. It must not be treated as an implemented feature until Template contracts and MVP code are changed.
+
+### 27.1 Dependency Direction
+
+MVP must consume the AI Agent Template specialist-agent contracts. MVP must not define a separate output schema for policy analysis, medical review, document understanding, or fraud risk.
+
+Expected dependency direction:
+
+```text
+data_generator
+-> ai_agent_template schemas/contracts/workflow
+-> mvp API/UI/runtime
+```
+
+### 27.2 Reviewer UI Minimal Change Plan
+
+The existing reviewer workflow remains:
+
+```text
+select or enter claim id
+-> load claim
+-> run review
+-> inspect recommendation and evidence
+-> save reviewer action
+```
+
+Future specialist reports should appear as additional reviewer panels:
+
+```text
+Assistant Recommendation
+Policy and Coverage
+Medical Review
+Fraud Risk
+Documents
+Calculation Trace
+Tool Trace
+```
+
+The customer UI should remain focused on claim intake and must not expose internal agent reports, hidden labels, fraud reasons, or medical-review labels.
+
+### 27.3 API Extension Plan
+
+Existing APIs should remain stable:
+
+```text
+POST /claims
+POST /reviews
+POST /reviews/{claim_id}/actions
+```
+
+Future response extensions should be additive under existing review output metadata, for example:
+
+```json
+{
+  "specialist_reports": [
+    {
+      "agent_name": "policy_coverage_analysis",
+      "status": "success",
+      "summary": "...",
+      "requires_human_review": false
+    }
+  ]
+}
+```
+
+Existing clients must continue to read `recommended_decision`, `recommended_payable_amount`, `policy_basis`, `calculation`, `reason_codes`, and `requires_human_review`.
+
+Current MVP behavior:
+
+- `POST /reviews` returns Template-generated `specialist_reports`.
+- `/ui/reviewer` renders those reports in the `Agent Reports` section.
+- `reviews.output_json` stores the complete review output, including `specialist_reports`.
+- Existing decision, payable amount, fraud fail-closed behavior, and label-based evaluation remain unchanged.
+
+### 27.4 KCD/EDI Runtime Data Plan
+
+When Template schemas are versioned, MVP should persist normalized medical-code results separately from raw claim intake.
+
+Recommended future tables or JSON columns:
+
+- `medical_code_mappings`
+- `medical_review_reports`
+- `document_extraction_results`
+- `specialist_agent_reports`
+
+The MVP should keep labels out of runtime storage. `medical_labels_*`, `code_mapping_labels_*`, `fraud_labels_*`, and claim-review `labels_*` must remain evaluation-only.
+
+### 27.5 VLM Provider Plan
+
+MVP should keep `general_llm` as the text reasoning and narrative provider:
+
+```yaml
+general_llm:
+  provider_type: openai_compatible
+  model_id: gemma-4-26B-4aB-it
+```
+
+If document VLM capability is required, MVP should use an additional provider configured through the Template model-provider abstraction:
+
+```yaml
+document_vlm:
+  provider_type: openai_compatible
+  model_id: <vlm-capable-model>
+```
+
+Provider readiness checks should verify image/PDF input support before enabling VLM-backed document understanding.
+
+Implemented MVP behavior:
+
+- MVP builds the Template SDK `DocumentExtractionService` from the configured generated-data root.
+- The claim-review workflow injects the extractor into `WorkflowRunner`.
+- Document Understanding specialist reports include document extraction findings, extraction status, field status details, and reviewer-facing warnings.
+- Text-based PDFs are extracted with available Python PDF text libraries; scan/image-style synthetic documents currently use metadata-backed OCR-style structured evidence.
+- `document_vlm` is loaded only when the config enables it and the Template SDK conformance probe passes.
+- OCR/VLM extraction results are persisted to `document_extraction_results` through the repository boundary.
+- The Reviewer Assistant screen renders document-level extraction details and field statuses inside the Agent Reports section.
+
+VLM conformance command:
+
+```powershell
+$env:DOCUMENT_VLM_BASE_URL = "https://<vlm-endpoint>/v1"
+$env:DOCUMENT_VLM_API_KEY = "<key>"
+$env:DOCUMENT_VLM_MODEL_ID = "<vlm-model>"
+$env:DOCUMENT_VLM_ENABLED = "true"
+python -m ai_agent_template.developer_kit.sdk.claim_agent_sdk.document_vlm_conformance `
+  --config mvp\config\model_config.yaml `
+  --sample-document data_generator\generated\documents\eval\CLM-EVAL-000001\medical_receipt.pdf
+```
+
+Current local default without these variables is `conformant=false` and `reason=not_configured`.
+
+Current safety boundary:
+
+- Low-confidence document extraction is shown as reviewer warning evidence and does not by itself override deterministic claim review output.
+- Fraud fail-closed, tool failure, and explicit workflow human-review rules continue to force `human_review`.
+- Production deployments may tighten this policy to force `human_review` for low-confidence document extraction after insurer-approved thresholds and evaluation are configured.
+
+### 27.6 Evaluation and Smoke Test Plan
+
+Implemented MVP evaluation and smoke coverage includes:
+
+- specialist report schema validation
+- reviewer UI renders additional panels without changing customer UI
+- document extraction result persistence
+- document extraction presence-rate, field-success proxy, field-label accuracy, mismatch proxy, and low-confidence human-review recall metrics
+- KCD mapping accuracy and EDI mapping accuracy
+- ambiguous medical-code human-review recall
+- medical causality routing accuracy and medical reason-code recall
+- policy citation clause recall and citation requirement pass rate
+
+Latest synthetic evaluation baseline:
+
+```text
+dataset_size: 200
+schema_validity: 1.0
+decision_accuracy: 1.0
+human_review_recall: 1.0
+fraud_suspected_recall: 1.0
+false_payment_rate: 0.0
+false_denial_rate: 0.0
+specialist_report_schema_validity: 1.0
+document_field_label_accuracy: 0.9917
+document_mismatch_detection_rate: 1.0
+low_confidence_document_human_review_recall: 1.0
+kcd_mapping_accuracy: 0.92
+edi_mapping_accuracy: 0.92
+citation_clause_recall: 1.0
+citation_requirement_pass_rate: 1.0
+ambiguous_code_human_review_recall: 1.0
+medical_causality_routing_accuracy: 1.0
+medical_reason_code_recall: 1.0
+```
+
+Current interpretation:
+
+- The base claim-review and fraud fail-closed workflow remains stable.
+- Document extraction and policy citation metrics are now useful as MVP regression checks.
+- KCD/EDI mapping is partially validated with synthetic code registry data.
+- Ambiguous-code and medical-causality metrics are now driven by Template-compatible runtime `medical_evidence`, while official registry and insurer-approved rules are still required before production use.
+
+Future MVP tests should add insurer-approved labels and payload evidence for:
+
+- KCD/EDI mapping appears only in reviewer-facing analysis
+- ambiguous KCD/EDI mapping routes to `human_review`
+- low-confidence document understanding creates reviewer warnings and, after insurer policy configuration, can route to `human_review`
+- policy citation failure creates reviewer warning
+- specialist report failure does not cause automatic pay or automatic denial
+
+## 28. Implemented Specialist Agent Foundation
+
+This section supersedes the "planned only" wording in Section 27 where it conflicts with current code.
+
+Implemented MVP persistence:
+
+- `medical_code_registry`
+- `procedure_code_registry`
+- `diagnosis_treatment_rules`
+- `medical_routing_rules`
+- `specialist_agent_reports`
+- `document_extraction_results`
+- `medical_registry_seed_runs`
+
+Implemented migration:
+
+```text
+mvp/app/db/migrations/004_medical_registry_specialist_agents.sql
+```
+
+Implemented seed command:
+
+```powershell
+python -m mvp.app.db.seed_medical_registry --generated-dir data_generator\generated
+```
+
+Implemented repository methods:
+
+```text
+seed_medical_registry
+get_medical_code
+get_procedure_code
+find_diagnosis_treatment_rule
+save_specialist_agent_reports
+list_specialist_agent_reports
+save_document_extraction_results
+list_document_extraction_results
+```
+
+Specialist evaluation label inputs:
+
+```text
+data_generator/generated/code_mapping_labels_eval.jsonl
+data_generator/generated/medical_labels_eval.jsonl
+data_generator/generated/policy_coverage_labels_eval.jsonl
+data_generator/generated/document_extraction_labels_eval.jsonl
+```
+
+Current synthetic baseline is intentionally diagnostic. Low values for ambiguous-code routing, medical reason-code recall, or exact citation clause recall indicate that the current synthetic specialist agents need richer report fields, not that the base claim-review MVP has regressed.
+
+Model role policy in `mvp/config/model_config.yaml`:
+
+- `general_llm`: Gemma4 26B-compatible orchestrator/reasoning and reviewer narrative generation.
+- `document_vlm`: separate provider for visual document understanding; disabled until a VLM-capable endpoint passes conformance testing.
+
+The MVP does not bundle full official KCD/EDI code tables. Production import must use authorized official sources and preserve source path or URL, version, effective date, checksum, and license/redistribution notes.
+
+Runtime APIs and DB seed jobs must not ingest or expose evaluation labels, including `medical_labels_*`, `code_mapping_labels_*`, `policy_coverage_labels_*`, `fraud_labels_*`, and claim-review `labels_*`.
+
+MVP claim review accepts the Template optional `medical_evidence` object when it is present in generated or API-submitted claims. This object can carry candidate KCD/EDI mapping confidence, prior diagnosis/surgery/test evidence, pre-existing-condition indicators, and insurer medical routing rules. It is runtime evidence and must not contain `expected_*`, hidden scenario names, or evaluation labels.
+
+The MVP SQLite seed path now loads `insurer_medical_routing_rules.json` into `medical_routing_rules`. The bundled rows are synthetic and replaceable; production rows must be insurer-approved and versioned.
+
+During `ReviewService.run_review`, MVP now calls the Template SDK `RuntimeMedicalRegistryService` before `WorkflowRunner` execution. The service queries imported `medical_code_registry`, `procedure_code_registry`, `diagnosis_treatment_rules`, and `medical_routing_rules`, then merges registry-backed KCD/EDI candidates and matched routing rules into the workflow payload's `medical_evidence`. The stored original claim payload remains unchanged.
+
+MVP official registry import command:
+
+```powershell
+python -m mvp.app.db.import_official_medical_registry `
+  --kcd-file C:\approved_sources\kcd.csv `
+  --edi-file C:\approved_sources\edi.csv `
+  --routing-rules-file C:\approved_sources\insurer_medical_routing_rules.json `
+  --version official-2026.1 `
+  --effective-from 2026-01-01 `
+  --kcd-source-url "https://kssc.kostat.go.kr" `
+  --edi-source-url "https://www.hira.or.kr" `
+  --license-note "Imported from insurer-approved source files; redistribution not bundled."
+```
+
+MVP must treat official registry import as an operations step. It must not download or redistribute official KCD/EDI tables by default.
+Imported registry rows are runtime evidence only. MVP must not load `medical_labels_*`, `code_mapping_labels_*`, or any other evaluation labels into runtime DB tables or internal APIs.
+
+## 29. Implemented Specialist Report Runtime Consumption
+
+The MVP now consumes specialist reports generated by the AI Agent Template `WorkflowRunner`.
+
+Expected `specialist_reports` entries:
+
+- `policy_coverage_analysis`
+- `document_understanding`
+- `medical_review_causality`
+- `fraud_risk_analysis`
+
+The underlying AI Agent Template now uses model-backed specialist report generation with deterministic safety rails. The model can refine reviewer-facing report text and findings, but it cannot change locked decision fields, payable amount, fraud routing, reason codes, citations, or calculation values. If the model call fails, MVP still receives deterministic evidence-based reports with a warning.
+
+Structured deterministic findings from the Template are preserved even when a model provider is active. Model-generated findings are appended as supplemental reviewer-facing evidence so that normalized KCD/EDI fields, document extraction field status, and policy clause citations remain stable for evaluation and audit.
+
+MVP uses the synthetic insurer-style specialist plugin pack by default:
+
+```text
+mvp/config/specialist_plugins.synthetic_insurer.yaml
+```
+
+Runtime override:
+
+```powershell
+$env:CLAIM_MVP_SPECIALIST_PLUGIN_CONFIG = "C:\path\to\specialist_plugins.yaml"
+```
+
+The default pack is a fictional insurer guideline profile for development and demo use. It must not be described as insurer-approved production logic.
+
+Runtime flow:
+
+```text
+Customer claim
+-> POST /claims
+-> POST /reviews
+-> RuntimeMedicalRegistryService enriches medical_evidence from SQLite registry
+-> Template WorkflowRunner
+-> deterministic tools and optional specialist agents
+-> review output with specialist_reports
+-> SQLite reviews.output_json
+-> /ui/reviewer Agent Reports section
+```
+
+MVP now exposes a dedicated specialist report API:
+
+```text
+GET /reviews/{claim_id}/specialist-reports
+```
+
+The API returns reviewer-facing Agent reports from `specialist_agent_reports`.
+The latest review output still includes `specialist_reports` for backward compatibility, and the Reviewer UI uses the dedicated API as a persistence-backed refresh/fallback.
+
+Audit policy:
+
+- `review_completed` audit metadata stores specialist report count and failed specialist report count.
+- Full claim payloads, raw document bytes, and full OCR text are not stored in `specialist_agent_reports`.
+- Customer-facing claim screens do not call the specialist report API.
+
+## 30. Next MVP Improvement Targets
+
+MVP should follow the AI Agent Template contract first and avoid adding separate one-off logic. The next high-impact MVP improvements are:
+
+- Surface candidate KCD/EDI confidence, ambiguity reason, and prior medical evidence more prominently in Reviewer Agent Reports.
+- [x] Use imported registry rows at runtime to generate KCD/EDI candidates and matched medical routing rules.
+- Replace synthetic ambiguity thresholds and routing policies with insurer-approved thresholds and rule sets.
+- Add reviewer filters for `human_review` reasons, failed specialist reports, low-confidence document extraction, and fraud-risk routing.
+- Add citation precision checks to evaluation so broad citation recall does not hide over-inclusion.
+- Replace scan-style metadata fallback with real OCR/VLM extraction after `document_vlm` conformance passes.
+- Keep all labels and evaluation-only files outside runtime APIs and customer-facing UI.
+
+## 31. Template-Owned P0 Completeness Gates
+
+MVP now consumes the AI Agent Template SDK controls instead of maintaining separate safety and evaluation implementations.
+
+- FastAPI startup calls the shared `validate_startup_configuration` before creating the application container.
+- Review and claim services call the shared label-leakage guard before normalization, persistence, or workflow execution.
+- Evaluation uses the shared `ReleaseGate` and `ai_agent_template/eval/thresholds.yaml`.
+- MVP review API responses preserve the Template canonical DTO fields: `claim_id`, `review_status`, `status`, `output`, `agent_output`, and `errors`.
+- Medical registry enrichment failure forces the final recommendation to `human_review`.
+- Model narrative failure remains advisory, is shown in reviewer notes, and is stored as safe audit metadata.
+- Template/MVP plugin profiles and API envelopes are covered by integration contract tests.
+
+The authoritative policy is `ai_agent_template/docs/COMPLETENESS_GATES.md`.
+
+## 32. Template-Owned Security and Reproducibility Controls
+
+MVP applies the Template `ApiAccessControl`, log redaction, and decision provenance utilities. Local UI/API behavior remains unchanged while `CLAIM_MVP_AUTH_ENABLED=false`. When enabled, role keys are loaded only from environment variables and enforced by FastAPI middleware.
+
+Every completed review audit includes secret-free decision provenance. Tool and retrieval logs persist redacted copies, and authenticated reviewer actions derive their actor from the request principal rather than trusting a caller-provided reviewer ID.
+
+MVP OpenAPI operations are checked against `ai_agent_template/schemas/api_surface.contract.json`. Environment locking and operations procedures follow the Template `DEVELOPMENT_ENVIRONMENT.md` and `OPERATIONS_RUNBOOK.md` documents.
+
+## 33. Customer PDF Upload Implementation
+
+Status: implemented from the AI Agent Template boundary.
+
+- Customer UI separates claim submission from typed PDF attachment.
+- API: `POST /claims/{claim_id}/documents?document_type={document_code}`
+- Runtime root: `CLAIM_MVP_DOCUMENT_STORAGE_DIR` or `paths.uploaded_documents_dir`, default `mvp/runtime/documents`
+- Migration: `mvp/app/db/migrations/006_customer_document_uploads.sql`
+- Repository delegates metadata persistence to the Template `sqlite_fraud_context` implementation.
+- Uploading a medical receipt replaces the persisted claim `receipt_hash` with the actual content SHA-256.
+- Fraud Context/Document API serves generated and runtime-uploaded documents without accepting client file paths.
+- Contract and HTTP round-trip tests cover Template/MVP parity, RBAC, metadata, hash synchronization, and content retrieval.
+
+## 다중 상품 Customer/Demo 연동
+
+MVP는 AI Agent Template의 `ProductCatalogRegistry`와 다음 표준 API를 그대로 사용한다.
+
+```text
+GET /products
+GET /products/{product_id}
+GET /products/{product_id}/policies
+```
+
+Customer와 Demo 화면의 Product ID는 `datalist` 기반으로 선택과 직접 입력을 모두
+지원한다. 알려진 Product ID를 선택하면 Product Name과 해당 Product에 속한 Policy
+후보를 표시한다. 직접 입력 UI를 허용하더라도 제출 시 미등록 Product/Policy 또는
+서로 불일치하는 조합은 저장 전에 거절한다. Demo preset은 Claim ID와 receipt ID만
+실행별로 변경하고 등록된 Policy ID는 유지하여 관계 정합성을 보존한다.
+현재 active adjudication product가 아닌 상품은 조회·접수할 수 있지만, 상품별 승인
+약관과 계산 plugin이 연결되기 전에는 `PRODUCT_ADJUDICATION_PROFILE_UNAVAILABLE`로
+`human_review`에 보내며 기존 합성 의료상품 규칙으로 자동 판단하지 않는다.

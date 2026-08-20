@@ -79,13 +79,10 @@ def normalize_claim_payload(payload: dict[str, Any]) -> dict[str, Any]:
         )
 
     if isinstance(normalized.get("claim_history"), dict):
-        receipt_hash = normalized.get("claim", {}).get("receipt_hash")
         prior_receipt_ids = list(history.get("prior_receipt_ids") or [])
         prior_receipt_hashes = list(history.get("prior_receipt_hashes") or [])
         if prior_receipt_ids and not prior_receipt_hashes:
             prior_receipt_hashes = [f"RH-{receipt_id}" for receipt_id in prior_receipt_ids]
-        if history.get("prior_receipt_ids") and receipt_hash and receipt_hash not in prior_receipt_hashes:
-            prior_receipt_hashes.append(receipt_hash)
         normalized["claim_history"] = {
             **history,
             "same_insured_provider_claims_30d": _int(

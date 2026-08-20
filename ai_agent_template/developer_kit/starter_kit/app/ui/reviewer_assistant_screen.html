@@ -2,41 +2,465 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reviewer Assistant</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #f5f6f8; color: #1f2933; }
-    header { background: #ffffff; border-bottom: 1px solid #d8dde6; padding: 18px 28px; }
-    main { display: grid; grid-template-columns: 1fr 360px; gap: 20px; padding: 24px; }
-    section { background: #ffffff; border: 1px solid #d8dde6; padding: 18px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border-bottom: 1px solid #e4e7eb; padding: 10px; text-align: left; }
-    .decision { font-size: 24px; font-weight: 700; color: #005fcc; }
-    button { margin-right: 8px; padding: 9px 12px; border: 1px solid #829ab1; background: #ffffff; }
-    button.primary { background: #005fcc; color: #ffffff; border-color: #005fcc; }
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --line: #d7dee8;
+      --muted: #5d6b7a;
+      --text: #17212f;
+      --blue: #075db3;
+      --blue-dark: #044885;
+      --red: #b42318;
+      --green: #0b6b3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 28px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 16px; letter-spacing: 0; }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 18px;
+      padding: 20px;
+    }
+    .stack { display: grid; gap: 18px; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 280px) minmax(180px, 1fr) auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+    label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #b8c4d2;
+      background: #ffffff;
+      color: var(--text);
+      font: inherit;
+      padding: 9px 10px;
+      min-height: 38px;
+    }
+    textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+    button {
+      border: 1px solid #8aa2bd;
+      background: #ffffff;
+      color: var(--text);
+      min-height: 38px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--blue);
+      color: #ffffff;
+      border-color: var(--blue);
+    }
+    button.primary:hover { background: var(--blue-dark); }
+    button:disabled { opacity: 0.58; cursor: wait; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      border-bottom: 1px solid #e5eaf0;
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    th { color: var(--muted); width: 180px; font-weight: 700; }
+    pre {
+      margin: 0;
+      max-height: 240px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      font-size: 12px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .decision { font-size: 24px; font-weight: 700; color: var(--blue); }
+    .pill {
+      display: inline-block;
+      padding: 3px 7px;
+      border: 1px solid #c8d3df;
+      background: #f8fafc;
+      font-size: 12px;
+      margin: 2px 4px 2px 0;
+    }
+    .danger { color: var(--red); font-weight: 700; }
+    .ok { color: var(--green); font-weight: 700; }
+    .muted { color: var(--muted); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .queue-item {
+      display: grid;
+      gap: 4px;
+      padding: 10px 0;
+      border-bottom: 1px solid #e5eaf0;
+      cursor: pointer;
+    }
+    .queue-item strong { font-size: 13px; }
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #c8d3df;
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 980px) {
+      main, .grid-2 { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Reviewer Assistant</h1>
+    <div class="row muted" id="reviewLoading"><span class="spinner"></span><span id="statusText">Ready</span></div>
   </header>
   <main>
-    <section>
-      <div class="decision">partial_pay recommendation</div>
-      <table>
-        <tr><th>Coverage</th><td>COV_OUTPATIENT_NONCOVERED</td></tr>
-        <tr><th>Recommended Payable</th><td>140,000 KRW</td></tr>
-        <tr><th>Reason Codes</th><td>COVERED_INCIDENT, PER_CLAIM_LIMIT_APPLIED, DEDUCTIBLE_APPLIED</td></tr>
-        <tr><th>Human Review</th><td>false</td></tr>
-      </table>
-    </section>
-    <section>
-      <h2>Reviewer Actions</h2>
-      <button class="primary">Approve</button>
-      <button>Override</button>
-      <button>Request Documents</button>
-      <button>Mark Human Review</button>
-    </section>
+    <div class="stack">
+      <section>
+        <h2>Claim Loader</h2>
+        <div class="toolbar">
+          <label>Submitted Claims
+            <select id="claimSelect"></select>
+          </label>
+          <label>Claim ID
+            <input id="claimIdInput" placeholder="MVP-CLAIM-0001">
+          </label>
+          <button id="loadClaimButton">Load Claim</button>
+          <button class="primary" id="runReviewButton">Run Review</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Claim Summary</h2>
+        <table id="claimSummary">
+          <tr><th>Status</th><td class="muted">No claim loaded</td></tr>
+        </table>
+      </section>
+
+      <div class="grid-2">
+        <section>
+          <h2>Assistant Recommendation</h2>
+          <div id="recommendationPanel" class="muted">Run Review to generate a recommendation.</div>
+        </section>
+        <section>
+          <h2>Evidence &amp; Action</h2>
+          <div id="evidencePanel" class="muted">Evidence will appear after review.</div>
+          <hr>
+          <div class="row">
+            <button data-action="accept_recommendation">Accept</button>
+            <button data-action="modify_recommendation">Modify</button>
+            <button data-action="request_documents">Request Documents</button>
+            <button data-action="mark_human_review">Human Review</button>
+          </div>
+          <label>Reviewer Note
+            <textarea id="reviewerNote"></textarea>
+          </label>
+        </section>
+      </div>
+
+      <section>
+        <h2>Raw Output</h2>
+        <pre id="rawOutput">{}</pre>
+      </section>
+    </div>
+
+    <aside class="stack">
+      <section>
+        <div class="row" style="justify-content: space-between;">
+          <h2>Review Queue</h2>
+          <button id="loadQueueButton">Load Queue</button>
+        </div>
+        <div id="queuePanel" class="muted">No queue loaded.</div>
+      </section>
+      <section>
+        <div class="row" style="justify-content: space-between;">
+          <h2>Action History</h2>
+          <button id="loadActionsButton">Load Actions</button>
+        </div>
+        <pre id="actionsPanel">[]</pre>
+      </section>
+      <section>
+        <div class="row" style="justify-content: space-between;">
+          <h2>Audit</h2>
+          <button id="loadAuditButton">Load Audit</button>
+        </div>
+        <pre id="auditPanel">[]</pre>
+      </section>
+    </aside>
   </main>
+
+  <script>
+    const claimSelect = document.getElementById("claimSelect");
+    const claimIdInput = document.getElementById("claimIdInput");
+    const claimSummary = document.getElementById("claimSummary");
+    const recommendationPanel = document.getElementById("recommendationPanel");
+    const evidencePanel = document.getElementById("evidencePanel");
+    const rawOutput = document.getElementById("rawOutput");
+    const queuePanel = document.getElementById("queuePanel");
+    const actionsPanel = document.getElementById("actionsPanel");
+    const auditPanel = document.getElementById("auditPanel");
+    const reviewerNote = document.getElementById("reviewerNote");
+    const statusText = document.getElementById("statusText");
+    const reviewLoading = document.getElementById("reviewLoading");
+    let loadedClaim = null;
+
+    async function apiJson(url, options = {}) {
+      const response = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...options,
+      });
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : {}; } catch (_) { data = null; }
+      if (!response.ok) {
+        const error = data?.error || data?.detail?.error;
+        const message = error?.message || (typeof data?.detail === "string" ? data.detail : "") || text || `HTTP ${response.status}`;
+        const requestId = error?.request_id || response.headers.get("X-Request-ID");
+        throw new Error(`${error?.code ? `${error.code}: ` : ""}${message}${requestId ? ` [${requestId}]` : ""}`);
+      }
+      if (data === null) throw new Error(`INVALID_JSON_RESPONSE: HTTP ${response.status}`);
+      return data;
+    }
+
+    function setStatus(text, loading = false) {
+      statusText.textContent = text;
+      reviewLoading.classList.toggle("loading", loading);
+      document.getElementById("runReviewButton").disabled = loading;
+    }
+
+    function resetReviewPanels() {
+      recommendationPanel.className = "muted";
+      recommendationPanel.textContent = "Run Review to generate a recommendation.";
+      evidencePanel.className = "muted";
+      evidencePanel.textContent = "Evidence will appear after review.";
+      rawOutput.textContent = "{}";
+      actionsPanel.textContent = "[]";
+      auditPanel.textContent = "[]";
+      reviewerNote.value = "";
+    }
+
+    function selectedClaimId() {
+      return claimIdInput.value.trim() || claimSelect.value;
+    }
+
+    async function loadClaims() {
+      const data = await apiJson("/claims?limit=100");
+      claimSelect.innerHTML = "";
+      for (const claim of data.claims || []) {
+        const option = document.createElement("option");
+        option.value = claim.claim_id;
+        option.textContent = `${claim.claim_id} | ${claim.status}`;
+        claimSelect.appendChild(option);
+      }
+      if (!claimIdInput.value && claimSelect.value) {
+        claimIdInput.value = claimSelect.value;
+      }
+    }
+
+    async function loadClaim() {
+      const claimId = selectedClaimId();
+      if (!claimId) return;
+      resetReviewPanels();
+      setStatus("Loading claim", true);
+      try {
+        loadedClaim = await apiJson(`/claims/${encodeURIComponent(claimId)}`);
+        claimIdInput.value = loadedClaim.claim_id;
+        renderClaim(loadedClaim);
+        setStatus("Claim loaded");
+      } catch (error) {
+        setStatus(error.message);
+      }
+    }
+
+    async function runReview() {
+      const claimId = selectedClaimId();
+      if (!claimId) return;
+      setStatus("Running review", true);
+      resetReviewPanels();
+      try {
+        const data = await apiJson("/reviews", {
+          method: "POST",
+          body: JSON.stringify({ claim_id: claimId }),
+        });
+        const output = data.output || data.agent_output || data;
+        renderOutput(output);
+        await Promise.all([loadActions(), loadAudit(), loadQueue()]);
+        setStatus("Review completed");
+      } catch (error) {
+        setStatus(error.message);
+      }
+    }
+
+    async function loadQueue() {
+      const data = await apiJson("/reviews/queue?limit=50");
+      queuePanel.innerHTML = "";
+      const queue = data.queue || [];
+      if (!queue.length) {
+        queuePanel.textContent = "No claims.";
+        queuePanel.className = "muted";
+        return;
+      }
+      for (const item of queue) {
+        const div = document.createElement("div");
+        div.className = "queue-item";
+        div.innerHTML = `
+          <strong>${item.claim_id}</strong>
+          <span class="muted">${item.status} | priority ${item.priority_score} | SLA ${item.sla_status}</span>
+          <span class="muted">${item.policy_id_masked || ""}</span>
+        `;
+        div.addEventListener("click", () => {
+          claimIdInput.value = item.claim_id;
+          loadClaim();
+        });
+        queuePanel.appendChild(div);
+      }
+    }
+
+    function renderClaim(claim) {
+      const c = claim.claim || {};
+      const profile = claim.insured_profile || {};
+      claimSummary.innerHTML = `
+        <tr><th>Claim ID</th><td>${claim.claim_id}</td></tr>
+        <tr><th>Policy/Product</th><td>${claim.policy_id} / ${claim.product_id}</td></tr>
+        <tr><th>Insured Profile</th><td>${profile.age_at_service ?? ""}, ${profile.sex ?? ""}, ${profile.policyholder_relation ?? ""}</td></tr>
+        <tr><th>Care / Benefit</th><td>${c.care_setting || ""} / ${c.benefit_category || ""}</td></tr>
+        <tr><th>Claimed Amount</th><td>${formatMoney(c.claimed_amount)}</td></tr>
+        <tr><th>Provider</th><td>${c.provider_id || ""}</td></tr>
+      `;
+    }
+
+    function renderOutput(output) {
+      const confidence = output.confidence_assessment || {};
+      const explanation = output.explanation_confidence || {};
+      recommendationPanel.className = "";
+      recommendationPanel.innerHTML = `
+        <div class="decision">${output.recommended_decision}</div>
+        <table>
+          <tr><th>Recommended Payable</th><td>${formatMoney(output.recommended_payable_amount)}</td></tr>
+          <tr><th>Coverage</th><td>${output.coverage_code} / ${output.coverage_name}</td></tr>
+          <tr><th>Human Review</th><td class="${output.requires_human_review ? "danger" : "ok"}">${output.requires_human_review}</td></tr>
+          <tr><th>Fraud Signal</th><td class="${output.fraud_suspected ? "danger" : "ok"}">${output.fraud_suspected}</td></tr>
+          <tr><th>Deterministic Confidence</th><td>${percent(confidence.deterministic_confidence ?? output.confidence)}</td></tr>
+          <tr><th>Evidence Clarity</th><td>${confidence.evidence_clarity || "-"}</td></tr>
+          <tr><th>Judgement Difficulty</th><td>${confidence.judgment_difficulty || "-"}</td></tr>
+          <tr><th>Explanation Confidence</th><td>${percent(explanation.score)} / ${explanation.faithfulness_to_tools || "-"}</td></tr>
+        </table>
+        <p>${output.review_summary || ""}</p>
+        <div>${(output.reason_codes || []).map(code => `<span class="pill">${code}</span>`).join("")}</div>
+      `;
+      evidencePanel.className = "";
+      evidencePanel.innerHTML = `
+        <table>
+          <tr><th>Calculation</th><td><pre>${JSON.stringify(output.calculation || {}, null, 2)}</pre></td></tr>
+          <tr><th>Policy Basis</th><td>${renderPolicyBasis(output.policy_basis || [])}</td></tr>
+          <tr><th>Reviewer Notes</th><td>${(output.reviewer_notes || []).map(note => `<div>${note}</div>`).join("")}</td></tr>
+        </table>
+      `;
+      rawOutput.textContent = JSON.stringify(output, null, 2);
+    }
+
+    function renderPolicyBasis(items) {
+      if (!items.length) return "<span class=\"muted\">No basis</span>";
+      return items.map(item => `
+        <div>
+          <strong>${item.section}</strong>
+          <div>${item.summary}</div>
+          <div class="muted">${item.source}${item.citation_id ? " | " + item.citation_id : ""}</div>
+        </div>
+      `).join("");
+    }
+
+    async function saveAction(action) {
+      const claimId = selectedClaimId();
+      if (!claimId) return;
+      setStatus("Saving action", true);
+      try {
+        await apiJson(`/reviews/${encodeURIComponent(claimId)}/actions`, {
+          method: "POST",
+          body: JSON.stringify({
+            action,
+            reviewer_id: "starter-reviewer",
+            reviewer_note: reviewerNote.value,
+          }),
+        });
+        await Promise.all([loadActions(), loadAudit()]);
+        setStatus("Action saved");
+      } catch (error) {
+        setStatus(error.message);
+      }
+    }
+
+    async function loadActions() {
+      const claimId = selectedClaimId();
+      if (!claimId) return;
+      const data = await apiJson(`/reviews/${encodeURIComponent(claimId)}/actions`);
+      actionsPanel.textContent = JSON.stringify(data.actions || [], null, 2);
+    }
+
+    async function loadAudit() {
+      const claimId = selectedClaimId();
+      if (!claimId) return;
+      const data = await apiJson(`/reviews/${encodeURIComponent(claimId)}/audit-logs`);
+      auditPanel.textContent = JSON.stringify(data.audit_logs || [], null, 2);
+    }
+
+    function formatMoney(value) {
+      if (value === undefined || value === null || value === "") return "-";
+      return `${Number(value).toLocaleString("ko-KR")} KRW`;
+    }
+
+    function percent(value) {
+      if (value === undefined || value === null || Number.isNaN(Number(value))) return "-";
+      return `${Math.round(Number(value) * 100)}%`;
+    }
+
+    claimSelect.addEventListener("change", () => {
+      claimIdInput.value = claimSelect.value;
+      resetReviewPanels();
+    });
+    document.getElementById("loadClaimButton").addEventListener("click", loadClaim);
+    document.getElementById("runReviewButton").addEventListener("click", runReview);
+    document.getElementById("loadQueueButton").addEventListener("click", loadQueue);
+    document.getElementById("loadActionsButton").addEventListener("click", loadActions);
+    document.getElementById("loadAuditButton").addEventListener("click", loadAudit);
+    document.querySelectorAll("[data-action]").forEach(button => {
+      button.addEventListener("click", () => saveAction(button.dataset.action));
+    });
+
+    loadClaims().then(loadQueue).catch(error => setStatus(error.message));
+  </script>
 </body>
 </html>
-

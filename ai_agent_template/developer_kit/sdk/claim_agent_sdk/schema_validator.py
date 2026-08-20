@@ -31,6 +31,9 @@ class SchemaValidator:
     def validate_retrieval_result(self, payload: dict[str, Any]) -> None:
         self._validate(payload, self.template.retrieval_result_schema, "retrieval_result")
 
+    def validate_agent_report(self, payload: dict[str, Any]) -> None:
+        self._validate(payload, self.template.agent_report_schema, "agent_report")
+
     def validate_tool_input(self, tool_name: str, payload: dict[str, Any]) -> None:
         contract = self.template.tool_contracts()[tool_name]
         self._validate(payload, contract["input_schema"], f"{tool_name}.input")

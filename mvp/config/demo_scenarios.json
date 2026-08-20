@@ -7,6 +7,7 @@
       "name": "Normal Pay",
       "category": "payment",
       "expected_decision": "pay",
+      "expected_runtime_decision": "human_review",
       "expected_fraud_suspected": false,
       "summary": "Complete covered outpatient claim below the per-claim limit.",
       "verification_points": [
@@ -16,8 +17,8 @@
       ],
       "claim": {
         "claim_id": "MVP-DEMO-NORMAL-PAY",
-        "policy_id": "POL-MVP-NORMAL-PAY",
-        "product_id": "SYN-MED-001",
+        "policy_id": "POL-SYN-MIRAE-M-CARE-2024-2-3ROOM-HOSP-RDR-0001",
+        "product_id": "MIRAE-M-CARE-2024-2-3ROOM-HOSP-RDR",
         "scenario_type": "normal_covered_outpatient",
         "claimant": {
           "synthetic_person_id": "INS-MVP-NORMAL-PAY",
@@ -80,6 +81,7 @@
       "name": "Partial Pay",
       "category": "payment",
       "expected_decision": "partial_pay",
+      "expected_runtime_decision": "human_review",
       "expected_fraud_suspected": false,
       "summary": "Covered outpatient claim above the per-claim limit.",
       "verification_points": [
@@ -89,8 +91,8 @@
       ],
       "claim": {
         "claim_id": "MVP-DEMO-PARTIAL-PAY",
-        "policy_id": "POL-MVP-PARTIAL-PAY",
-        "product_id": "SYN-MED-001",
+        "policy_id": "POL-SYN-MIRAESET-MCARE-INPATIENT-RIDER-2024-0001",
+        "product_id": "MIRAESET-MCARE-INPATIENT-RIDER-2024",
         "scenario_type": "limit_exceeded_covered_outpatient",
         "claimant": {
           "synthetic_person_id": "INS-MVP-PARTIAL-PAY",
@@ -153,6 +155,7 @@
       "name": "Request Documents",
       "category": "document",
       "expected_decision": "request_documents",
+      "expected_runtime_decision": "human_review",
       "expected_fraud_suspected": false,
       "summary": "Required diagnosis note is missing.",
       "verification_points": [
@@ -162,8 +165,8 @@
       ],
       "claim": {
         "claim_id": "MVP-DEMO-REQUEST-DOCUMENTS",
-        "policy_id": "POL-MVP-REQUEST-DOCUMENTS",
-        "product_id": "SYN-MED-001",
+        "policy_id": "POL-SYN-ABL-UNIV-LIFE-2501-RDR_SURGERY-0001",
+        "product_id": "ABL-UNIV-LIFE-2501-RDR_SURGERY",
         "scenario_type": "missing_required_document",
         "claimant": {
           "synthetic_person_id": "INS-MVP-REQUEST-DOCUMENTS",
@@ -225,6 +228,7 @@
       "name": "Deny",
       "category": "policy",
       "expected_decision": "deny",
+      "expected_runtime_decision": "human_review",
       "expected_fraud_suspected": false,
       "summary": "Policy status is lapsed.",
       "verification_points": [
@@ -234,8 +238,8 @@
       ],
       "claim": {
         "claim_id": "MVP-DEMO-DENY",
-        "policy_id": "POL-MVP-DENY",
-        "product_id": "SYN-MED-001",
+        "policy_id": "POL-SYN-HGBL-ANSIMCARE2504-1-0003",
+        "product_id": "HGBL-ANSIMCARE2504-1",
         "scenario_type": "lapsed_policy",
         "claimant": {
           "synthetic_person_id": "INS-MVP-DENY",
@@ -298,6 +302,7 @@
       "name": "Human Review",
       "category": "risk",
       "expected_decision": "human_review",
+      "expected_runtime_decision": "human_review",
       "expected_fraud_suspected": false,
       "summary": "Repeated same-diagnosis history triggers mandatory human review.",
       "verification_points": [
@@ -307,8 +312,8 @@
       ],
       "claim": {
         "claim_id": "MVP-DEMO-HUMAN-REVIEW",
-        "policy_id": "POL-MVP-HUMAN-REVIEW",
-        "product_id": "SYN-MED-001",
+        "policy_id": "POL-SYN-HKG_LIFE_ANSIMCARE2504_2_TYPE_DISABILITY-0001",
+        "product_id": "HKG_LIFE_ANSIMCARE2504_2_TYPE_DISABILITY",
         "scenario_type": "repeated_same_diagnosis",
         "claimant": {
           "synthetic_person_id": "INS-MVP-HUMAN-REVIEW",
@@ -371,6 +376,7 @@
       "name": "Fraud Signal",
       "category": "risk",
       "expected_decision": "human_review",
+      "expected_runtime_decision": "human_review",
       "expected_fraud_suspected": true,
       "summary": "Duplicate receipt signal triggers fraud-suspected human review.",
       "verification_points": [
@@ -380,7 +386,7 @@
       ],
       "claim": {
         "claim_id": "MVP-DEMO-FRAUD-SIGNAL",
-        "policy_id": "POL-MVP-FRAUD-SIGNAL",
+        "policy_id": "POL-SYN-SYN-MED-001-0002",
         "product_id": "SYN-MED-001",
         "scenario_type": "duplicate_receipt_signal",
         "claimant": {

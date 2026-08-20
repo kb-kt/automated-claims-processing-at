@@ -1,0 +1,55 @@
+{
+  "tool_name": "medical_code_mapper",
+  "version": "1.0.0",
+  "description": "Normalize submitted diagnosis and treatment codes into KCD/EDI candidates.",
+  "input_schema": {
+    "type": "object",
+    "required": ["claim"],
+    "additionalProperties": false,
+    "properties": {
+      "claim": { "type": "object" },
+      "document_extractions": { "type": "array", "items": { "type": "object" } },
+      "medical_evidence": { "type": "object" },
+      "registry_version": { "type": "string" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["report", "submitted_diagnosis_code", "submitted_treatment_code", "kcd_candidates", "edi_candidates"],
+    "additionalProperties": false,
+    "properties": {
+      "report": { "$ref": "../../schemas/agent_report.schema.json" },
+      "submitted_diagnosis_code": { "type": "string" },
+      "submitted_treatment_code": { "type": "string" },
+      "kcd_candidates": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["code", "confidence"],
+          "properties": {
+            "code": { "type": "string" },
+            "code_name": { "type": "string" },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "source": { "type": "string" }
+          }
+        }
+      },
+      "edi_candidates": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["code", "confidence"],
+          "properties": {
+            "code": { "type": "string" },
+            "code_name": { "type": "string" },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "source": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "timeout_ms": 3000,
+  "failure_policy": "human_review",
+  "owner": "claim-review-template"
+}

@@ -1,0 +1,106 @@
+{
+  "product_id": "MIRAES-CARE-CANCER_DIAGNO-RIDER-RENEW-001",
+  "product_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_암(유사암제외)진단특약(갱신형) 무배당",
+  "product_type": "real_insurance_product",
+  "version": "unknown",
+  "currency": "KRW",
+  "effective_date": "2000-01-01",
+  "description": "미래에셋 M-케어 건강보험의 암(유사암 제외) 진단 특약으로서 갱신형 정기 보험입니다. 지급 대상은 암(유사암 제외) 진단 시 입니다.",
+  "coverages": [
+    {
+      "coverage_code": "COV_CANCER_DIAGNOSIS_EXCL_SIMILAR",
+      "name": "암(유사암 제외) 진단 특약",
+      "care_setting": "diagnosis",
+      "benefit_category": "cancer",
+      "annual_limit": 100000000,
+      "deductible": {
+        "type": "rate",
+        "rate": 0.0
+      },
+      "required_documents": [
+        "claim_form",
+        "diagnosis_certificate",
+        "pathology_report"
+      ],
+      "source_fields": {
+        "insured_amount": "1억원",
+        "product_name": "암(유사암제외)진단특약(갱신형) 무배당",
+        "product_full_name": "미래에셋 M-케어 건강보험 무배당 [기본형]_암(유사암제외)진단특약(갱신형) 무배당",
+        "payment_conditions2": "암(유사암제외)"
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "code": "EXC_INTENTIONAL",
+      "name": "계약자, 피보험자, 수익자의 고의 행위"
+    }
+  ],
+  "decision_priority": [
+    "fraud_or_duplicate_signals",
+    "policy_status_or_coverage_period",
+    "missing_required_documents",
+    "clear_exclusion",
+    "human_review_risk",
+    "coverage_limit_or_deductible",
+    "normal_covered_claim"
+  ],
+  "human_review_rules": [
+    {
+      "code": "HR_RENEWAL_AMBIGUITY",
+      "condition": "갱신형 상품의 갱신 조건 및 갱신 후 보장 내용이 명확하지 않음"
+    },
+    {
+      "code": "HR_INSURED_AMOUNT_LIMIT",
+      "condition": "보험금액이 명확하지 않거나 변동 가능성 존재"
+    },
+    {
+      "code": "HR_MISSING_PAYMENT_CONDITIONS",
+      "condition": "치료비 지급 조건 일부 정보 없음"
+    }
+  ],
+  "source_dataset": {
+    "source_path": "/Users/songhunhan/workspace/KT/finance_insurance/dataset/36.금융상품·서비스_및_소비자_특성_데이터/3.개방데이터/1.데이터/Training/01.원천데이터/TS_1.상품_2.보험_06.암/보험_06_미래에셋 M-케어 건강보험 무배당 [기본형]_암(유사암제외)진단특약(갱신형) 무배당.json"
+  },
+  "extraction_warnings": [
+    "effective_date 정보 없음으로 기본값 2000-01-01 사용",
+    "version 정보 없음으로 'unknown' 지정",
+    "deductible/copay 정보 없음으로 {\"type\":\"rate\",\"rate\":0.0} 지정 및 경고 출력",
+    "치료비 지급 조건 일부(payment_conditions3~7) 정보 누락",
+    "보장 한도는 1억원으로 판단하였으나 지급 한도 상세 조건 불명",
+    "required_documents는 진단 관련 서류로 추정하여 기본서류로 지정",
+    "갱신형 관련 갱신 조건 모호, 갱신 후 보장 조건 불명확"
+  ],
+  "source_citations": [
+    {
+      "field": "products.product_name",
+      "source_field": "product_full_name",
+      "source_value": "미래에셋 M-케어 건강보험 무배당 [기본형]_암(유사암제외)진단특약(갱신형) 무배당",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].limit_per_claim",
+      "source_field": "insured_amount",
+      "source_value": "1억원",
+      "confidence": "high"
+    },
+    {
+      "field": "products.exclusions[0].name",
+      "source_field": "exclusion_items",
+      "source_value": "계약자, 피보험자, 수익자의 고의",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].name",
+      "source_field": "product_name",
+      "source_value": "암(유사암제외)진단특약(갱신형) 무배당",
+      "confidence": "high"
+    },
+    {
+      "field": "products.coverages[0].benefit_category",
+      "source_field": "product_type",
+      "source_value": "암",
+      "confidence": "high"
+    }
+  ]
+}

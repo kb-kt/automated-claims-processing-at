@@ -14,34 +14,34 @@
   },
   "decision_distribution_actual": {
     "deny": {
-      "count": 144,
-      "ratio": 0.12
+      "count": 139,
+      "ratio": 0.115833
     },
     "human_review": {
-      "count": 156,
-      "ratio": 0.13
+      "count": 183,
+      "ratio": 0.1525
     },
     "partial_pay": {
-      "count": 300,
-      "ratio": 0.25
+      "count": 287,
+      "ratio": 0.239167
     },
     "pay": {
-      "count": 420,
-      "ratio": 0.35
+      "count": 418,
+      "ratio": 0.348333
     },
     "request_documents": {
-      "count": 180,
-      "ratio": 0.15
+      "count": 173,
+      "ratio": 0.144167
     }
   },
   "scenario_distribution_actual": {
     "before_coverage_start": {
-      "count": 29,
-      "ratio": 0.024167
+      "count": 27,
+      "ratio": 0.0225
     },
     "cosmetic_exclusion": {
-      "count": 29,
-      "ratio": 0.024167
+      "count": 27,
+      "ratio": 0.0225
     },
     "duplicate_receipt_suspected": {
       "count": 18,
@@ -52,106 +52,110 @@
       "ratio": 0.015
     },
     "frequent_manual_therapy": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
     },
     "high_amount_noncovered_inpatient": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
     },
     "high_outpatient_amount": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
     },
     "intentional_injury": {
-      "count": 29,
-      "ratio": 0.024167
+      "count": 28,
+      "ratio": 0.023333
     },
     "lapsed_policy": {
       "count": 29,
       "ratio": 0.024167
     },
     "limit_exceeded_covered_outpatient": {
-      "count": 100,
-      "ratio": 0.083333
+      "count": 95,
+      "ratio": 0.079167
     },
     "limit_exceeded_noncovered_outpatient": {
-      "count": 101,
-      "ratio": 0.084167
+      "count": 98,
+      "ratio": 0.081667
     },
     "missing_inpatient_document": {
-      "count": 60,
-      "ratio": 0.05
+      "count": 58,
+      "ratio": 0.048333
     },
     "missing_required_document": {
-      "count": 60,
-      "ratio": 0.05
+      "count": 58,
+      "ratio": 0.048333
     },
     "missing_special_document": {
-      "count": 60,
-      "ratio": 0.05
+      "count": 57,
+      "ratio": 0.0475
     },
     "mri_document_claim_mismatch": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
     },
     "non_medical_provider": {
       "count": 28,
       "ratio": 0.023333
     },
     "normal_covered_inpatient": {
-      "count": 106,
-      "ratio": 0.088333
+      "count": 103,
+      "ratio": 0.085833
     },
     "normal_covered_outpatient": {
-      "count": 106,
-      "ratio": 0.088333
+      "count": 102,
+      "ratio": 0.085
     },
     "normal_noncovered_outpatient": {
-      "count": 104,
-      "ratio": 0.086667
-    },
-    "normal_prescription": {
-      "count": 104,
-      "ratio": 0.086667
-    },
-    "prescription_limit_exceeded": {
       "count": 99,
       "ratio": 0.0825
     },
+    "normal_prescription": {
+      "count": 100,
+      "ratio": 0.083333
+    },
+    "prescription_limit_exceeded": {
+      "count": 94,
+      "ratio": 0.078333
+    },
     "repeated_same_diagnosis": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
+    },
+    "synthetic_documented_claim": {
+      "count": 46,
+      "ratio": 0.038333
     }
   },
   "coverage_distribution_actual": {
     "COV_INPATIENT_COVERED": {
-      "count": 213,
-      "ratio": 0.1775
+      "count": 208,
+      "ratio": 0.173333
     },
     "COV_INPATIENT_NONCOVERED": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
     },
     "COV_OUTPATIENT_COVERED": {
-      "count": 366,
-      "ratio": 0.305
+      "count": 351,
+      "ratio": 0.2925
     },
     "COV_OUTPATIENT_NONCOVERED": {
-      "count": 286,
-      "ratio": 0.238333
+      "count": 321,
+      "ratio": 0.2675
     },
     "COV_PRESCRIPTION": {
-      "count": 203,
-      "ratio": 0.169167
+      "count": 194,
+      "ratio": 0.161667
     },
     "COV_SPECIAL_MANUAL_THERAPY": {
-      "count": 24,
-      "ratio": 0.02
+      "count": 23,
+      "ratio": 0.019167
     },
     "COV_SPECIAL_MRI_MRA": {
-      "count": 84,
-      "ratio": 0.07
+      "count": 80,
+      "ratio": 0.066667
     }
   },
   "validation_summary": {
@@ -160,5 +164,80 @@
     "warning_count": 0,
     "errors": [],
     "warnings": []
+  },
+  "fraud_generation": {
+    "fraud_scenario_distribution": {
+      "altered_duplicate_receipt": 2,
+      "complex_duplicate_and_amount": 2,
+      "complex_provider_volume_and_duplicate": 2,
+      "complex_repeat_and_forged_document": 2,
+      "document_corrupted_pdf": 2,
+      "document_low_ocr_scan": 2,
+      "document_missing": 2,
+      "document_password_protected": 2,
+      "exact_duplicate_receipt": 2,
+      "forged_amount": 2,
+      "forged_date": 2,
+      "forged_provider": 2,
+      "fraudulent_document_signal": 2,
+      "hard_negative_large_provider": 2,
+      "hard_negative_pdf_regenerated": 2,
+      "hard_negative_regular_visits": 2,
+      "hard_negative_same_amount_distinct_receipts": 2,
+      "legacy_receipt_id_duplicate": 2,
+      "normal_clean": 2,
+      "provider_volume_49_boundary": 2,
+      "provider_volume_50": 2,
+      "same_insured_provider_repeat_2_boundary": 2,
+      "same_insured_provider_repeat_3": 2
+    },
+    "fraud_label_counts": {
+      "dev": 23,
+      "eval": 23,
+      "fraud_suspected": 24,
+      "human_review": 32
+    },
+    "historical_claims": 466,
+    "documents": 7200
+  },
+  "medical_generation": {
+    "medical_scenario_distribution": {
+      "ambiguous_edi_mapping_human_review": 101,
+      "ambiguous_kcd_mapping_human_review": 101,
+      "clear_edi_mapping": 101,
+      "clear_kcd_mapping": 101,
+      "diagnosis_treatment_compatible": 100,
+      "diagnosis_treatment_unrelated": 100,
+      "diagnosis_treatment_weakly_related": 100,
+      "document_understanding_failure": 99,
+      "high_cost_insufficient_evidence": 99,
+      "high_cost_sufficient_evidence": 99,
+      "possible_excessive_treatment": 99,
+      "possible_pre_existing_condition": 100
+    },
+    "policy_coverage_scenario_distribution": {
+      "deductible_and_limit_clause_match": 240,
+      "exclusion_clause_review": 240,
+      "special_noncovered_rider_match": 240,
+      "standard_covered_clause_match": 240,
+      "unclear_policy_citation_human_review": 240
+    },
+    "code_mapping_label_counts": {
+      "dev": 1000,
+      "eval": 200,
+      "ambiguous": 202
+    },
+    "medical_label_counts": {
+      "dev": 1000,
+      "eval": 200,
+      "human_review": 600
+    },
+    "document_understanding_rows": 7200,
+    "registries": {
+      "medical_code_registry": 6,
+      "edi_code_registry": 6,
+      "diagnosis_treatment_rules": 7,
+      "insurer_medical_routing_rules": 6
+    }
   }
 }

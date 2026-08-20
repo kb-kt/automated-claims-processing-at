@@ -702,6 +702,8 @@ Required demo capabilities:
 
 The demo scenario layer must remain separable from customer claim intake, so future deployments can disable or remove `/ui/demo` and `/demo/*` without changing the customer claim or reviewer assistant workflows.
 
+Fraud_Check v2 verification is presented as a separate preset group on `/ui/demo`. These presets use fixed generated claim IDs to retain links to seeded history and document evidence. They must cover clean, duplicate, altered duplicate, document mismatch, behavioral threshold, provider-volume threshold, and document-processing failure cases. Runtime payloads must not contain expected Fraud results or evaluation labels; expectation metadata is returned and rendered outside the claim object.
+
 ## 18. MVP Demo Scenario Presets
 
 MVP는 시연과 내부 검증을 위해 고객 청구 화면에 demo scenario preset을 제공한다.
@@ -775,3 +777,158 @@ providers:
     api_key: dummy
     model_id: gemma-4-26B-4aB-it
 ```
+
+## 21. Fraud_Check Remote Review Requirement
+
+MVP fraud review must be performed through the AI Agent Template `fraud_signal_checker` tool contract. Until Fraud_Check is complete, the default MVP `plugins.yaml` uses the synthetic fraud checker for local demos.
+
+Remote Fraud_Check integration is enabled by selecting:
+
+```yaml
+# mvp/config/plugins.remote.yaml
+fraud_signal_checker:
+  module: mvp.app.plugins.remote_fraud_signal_checker
+  class: RemoteFraudSignalCheckerPlugin
+```
+
+Required environment:
+
+```powershell
+$env:CLAIM_MVP_PLUGIN_CONFIG = "C:\Users\PC\AA\Automated_Claims_Processing\mvp\config\plugins.remote.yaml"
+$env:FRAUD_CHECK_URL = "http://127.0.0.1:8010"
+$env:FRAUD_CHECK_API_KEY = "optional-token"
+```
+
+Business rules:
+
+- Fraud_Check is an assistant signal provider, not a final fraud adjudicator.
+- `fraud_suspected=true` must always route the claim to `human_review`.
+- Fraud_Check unavailability, timeout, HTTP error, invalid JSON, or invalid response contract must fail closed to `human_review`.
+- The system must not automatically deny a claim because of fraud signal.
+- The system must not automatically pay a claim when Fraud_Check is unavailable.
+- Default local/demo execution must not require Fraud_Check to be running.
+- Raw claim payloads and direct personal identifiers must not be written to general application logs.
+
+## 22. Specialist Agent UX and MVP Scope Direction
+
+This section is a planned MVP direction and does not require immediate implementation. The AI Agent Template remains the source of truth. MVP changes must follow Template schema, workflow, and plugin contracts.
+
+### 22.1 MVP Role
+
+The MVP should demonstrate how a Template-based Orchestrator Agent can consume specialist agent reports and present them to an insurance reviewer. MVP must not define incompatible specialist-agent behavior independently from `/ai_agent_template`.
+
+### 22.2 Planned Specialist Report Areas
+
+The reviewer assistant screen should be extendable to display:
+
+- Assistant Recommendation
+- Policy and Coverage Analysis
+- Medical Review and Causality
+- Fraud Risk
+- Document Understanding
+- Calculation and Deductible Trace
+- Evidence and Tool Trace
+
+These areas may be implemented as tabs, collapsible panels, or compact worklist sections. The customer claim-intake screen should remain minimally changed.
+
+### 22.3 Policy and Coverage UX
+
+MVP should show policy analysis in reviewer-facing language:
+
+- matched policy clauses
+- rider/special-term findings
+- exclusions or non-coverage clauses
+- deductible and limit basis
+- citation status
+- conflicts or unclear clauses
+
+Low citation quality must be displayed as a reviewer warning, not as a hidden failure.
+
+### 22.4 Medical Review UX
+
+MVP should show medical review as an assistant report, not as a final medical adjudication.
+
+Reviewer-visible fields may include:
+
+- normalized KCD code and mapping confidence
+- normalized EDI code and mapping confidence
+- diagnosis-treatment relationship
+- medical necessity summary
+- pre-existing condition review signal
+- excessive-treatment review signal
+- requested additional documents
+- reason for human medical review
+
+MVP must consume the AI Agent Template `medical_evidence` input contract when present. The customer screen should not expose or edit this object directly in normal claim intake; demo or generated-data flows may submit it as structured synthetic evidence.
+
+The customer screen should not expose internal KCD/EDI uncertainty, fraud labels, medical labels, or hidden scenario metadata.
+
+### 22.5 Document Understanding UX
+
+MVP should support document-understanding results from OCR, text PDF extraction, or VLM providers when the Template introduces the contract.
+
+Reviewer-visible fields may include:
+
+- document type
+- extracted key fields
+- extraction confidence
+- field mismatch warnings
+- table extraction status
+- VLM/OCR fallback status
+
+Raw full OCR text, raw document bytes, and direct personal identifiers should not be displayed by default.
+
+### 22.6 Model Provider Expectation
+
+The current MVP `general_llm` provider is used for reasoning over structured evidence and generating reviewer-facing narrative. It must not be assumed to perform VLM document reading unless the serving endpoint has passed a provider conformance test for image/PDF input.
+
+If VLM is required, MVP should configure a separate Template-compatible provider such as `document_vlm` and keep the existing `general_llm` for orchestration and narrative generation.
+
+## 23. Specialist Agent Foundation Alignment
+
+The MVP now mirrors the AI Agent Template foundation for future specialist-agent development.
+
+Implemented MVP foundations:
+
+- KCD medical-code registry persistence through SQLite.
+- EDI procedure-code registry persistence through SQLite.
+- diagnosis-treatment relationship rule persistence for medical review and causality checks.
+- specialist agent report and document extraction result tables for future reviewer-facing panels.
+- registry seed command that loads synthetic outputs from `data_generator/generated`.
+- model-provider role separation: `general_llm` remains the orchestrator/reasoning provider, while `document_vlm` is configured as a disabled, separately testable document-understanding provider.
+
+The MVP keeps the current claim/review workflow stable. Specialist reports are additive and must not replace the deterministic workflow output fields: `recommended_decision`, `recommended_payable_amount`, `coverage_code`, `calculation`, `policy_basis`, `reason_codes`, and `requires_human_review`.
+
+Medical specialist routing from `medical_evidence.insurer_medical_routing_rules` is reviewer-facing by default. It should not override the final claim-review decision unless a later insurer-approved workflow policy explicitly promotes medical routing to final workflow routing.
+
+MVP must seed and query Template-compatible `medical_routing_rules` so the demo can run with synthetic rules and later switch to insurer-approved rules without changing API handlers or UI contracts.
+
+MVP must provide the same official registry import command as the AI Agent Template Starter Kit. Official KCD/EDI rows and insurer medical routing rules are operational configuration data, not customer claim data and not evaluation labels.
+
+Runtime label isolation remains mandatory. `medical_labels_*`, `code_mapping_labels_*`, `policy_coverage_labels_*`, `fraud_labels_*`, and claim-review `labels_*` are evaluation-only files and must not be loaded into the runtime DB or exposed through runtime APIs.
+
+Official KCD/EDI data is not bundled. Production use must import authorized official files or APIs, store source/version/effective-date/checksum/license metadata, and avoid redistributing restricted code tables unless the insurer has the right to do so.
+
+## 24. Specialist Report Runtime Consumption
+
+The MVP now consumes the AI Agent Template's `specialist_reports` output during review execution.
+
+Reviewer-facing reports currently include:
+
+- Policy and Coverage Analysis
+- Document Understanding
+- Medical Review and Causality
+- Fraud Risk Analysis
+
+The default MVP report source is a synthetic insurer-style plugin pack. It demonstrates how insurer-specific specialist plugins can be swapped through configuration without changing claim intake, deterministic payment calculation, or reviewer authority.
+
+The customer claim screen does not expose internal agent reports. It provides a separate post-submission PDF attachment area, while reviewer users inspect specialist reports in the Reviewer Assistant `Agent Reports` section after running review.
+
+This is still an assistant-support feature. Specialist reports must not become final payment decisions without reviewer action or insurer-approved downstream workflow.
+
+## Customer PDF Upload Requirement
+
+- The customer claim screen supports attaching a typed PDF after `POST /claims` succeeds.
+- MVP reuses the AI Agent Template upload service, repository contract, integrity checks, and internal Document API behavior.
+- Uploaded document types and the actual medical-receipt SHA-256 are synchronized into the persisted claim before review.
+- Invalid MIME, oversized, empty, malformed, unknown-claim, and unsupported document-type uploads return structured errors.

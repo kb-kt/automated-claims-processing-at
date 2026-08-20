@@ -60,6 +60,28 @@ class DataGeneratorTemplateCompatibilityTest(unittest.TestCase):
                     leaked = _find_forbidden_keys(claim, FORBIDDEN_CLAIM_KEYS)
                     self.assertEqual(leaked, set())
 
+    def test_runtime_artifacts_do_not_leak_evaluation_fields(self) -> None:
+        runtime_files = [
+            "insureds.json",
+            "providers.json",
+            "historical_claims.jsonl",
+            "claims_dev.jsonl",
+            "claims_eval.jsonl",
+            "document_metadata_dev.jsonl",
+            "document_metadata_eval.jsonl",
+            "claim_document_links_dev.jsonl",
+            "claim_document_links_eval.jsonl",
+            "fraud_context_seed_dev.jsonl",
+            "fraud_context_seed_eval.jsonl",
+        ]
+        for file_name in runtime_files:
+            path = GENERATED_DIR / file_name
+            rows = _read_jsonl(path) if path.suffix == ".jsonl" else [_read_json(path)]
+            for row_number, row in enumerate(rows, start=1):
+                with self.subTest(file=file_name, row=row_number):
+                    leaked = _find_forbidden_keys(row, FORBIDDEN_CLAIM_KEYS)
+                    self.assertEqual(leaked, set())
+
     def test_claim_ids_match_labels_by_split(self) -> None:
         for claim_file, label_file in zip(self.claim_files, self.label_files):
             claims = _read_jsonl(claim_file)
